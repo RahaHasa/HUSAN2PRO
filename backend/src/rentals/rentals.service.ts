@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Rental } from './rental.entity';
+import { Rental, PaymentStatus } from './rental.entity';
 
 @Injectable()
 export class RentalsService {
@@ -29,6 +29,11 @@ export class RentalsService {
 
   async update(id: number, rental: Partial<Rental>) {
     await this.rentalsRepository.update(id, rental);
+    return this.findOne(id);
+  }
+
+  async updatePaymentStatus(id: number, paymentStatus: PaymentStatus) {
+    await this.rentalsRepository.update(id, { paymentStatus });
     return this.findOne(id);
   }
 

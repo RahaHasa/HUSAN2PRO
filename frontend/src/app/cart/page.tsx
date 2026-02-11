@@ -62,7 +62,7 @@ export default function CartPage() {
 
   const applyPromoCode = async () => {
     if (!promoCode.trim()) {
-      setToast({ message: 'Введите промокод', type: 'error' });
+      setToast({ message: 'Промокодты енгізіңіз', type: 'error' });
       return;
     }
 
@@ -70,7 +70,7 @@ export default function CartPage() {
       const discount = await api.getDiscountByCode(promoCode.toUpperCase());
       
       if (!discount) {
-        setToast({ message: 'Неверный промокод', type: 'error' });
+        setToast({ message: 'Қате промокод', type: 'error' });
         setDiscount(0);
         localStorage.removeItem('cartDiscount');
         return;
@@ -79,11 +79,11 @@ export default function CartPage() {
       // Проверка срока действия
       const now = new Date();
       if (discount.startDate && new Date(discount.startDate) > now) {
-        setToast({ message: 'Промокод еще не активен', type: 'error' });
+        setToast({ message: 'Промокод әлі белсенді емес', type: 'error' });
         return;
       }
       if (discount.endDate && new Date(discount.endDate) < now) {
-        setToast({ message: 'Промокод истек', type: 'error' });
+        setToast({ message: 'Промокод мерзімі өтті', type: 'error' });
         return;
       }
 
@@ -92,10 +92,10 @@ export default function CartPage() {
         code: discount.name, 
         percentage: discount.value 
       }));
-      setToast({ message: `Промокод применен! Скидка ${discount.value}%`, type: 'success' });
+      setToast({ message: `Промокод қолданылды! Жеңілдік ${discount.value}%`, type: 'success' });
     } catch (error) {
       console.error('Failed to apply promo code:', error);
-      setToast({ message: 'Ошибка при проверке промокода', type: 'error' });
+      setToast({ message: 'Промокодты тексеру кезінде қате', type: 'error' });
       setDiscount(0);
       localStorage.removeItem('cartDiscount');
     }
@@ -129,56 +129,65 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-black">CINERENT</Link>
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 md:h-20">
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="RENT MEYRAM" className="h-12 sm:h-16 md:h-20" />
+            </Link>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Главная</Link>
+              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Басты бет</Link>
               <Link href="/catalog" className="text-sm font-medium hover:text-gray-600 transition">Каталог</Link>
+              {user && user.role !== 'admin' && (
+                <Link href="/rentals" className="text-sm font-medium hover:text-gray-600 transition">Менің жалға алуым</Link>
+              )}
               {user?.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Админ</Link>
+                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Әкімші</Link>
               )}
             </nav>
 
             <div className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/cart" className="text-black">
-                <ShoppingCart className="w-5 h-5" />
-              </Link>
-              <button className="hover:text-gray-600 transition hidden sm:block">
-                <Heart className="w-5 h-5" />
-              </button>
+              {user?.role !== 'admin' && (
+                <>
+                  <Link href="/cart" className="text-black">
+                    <ShoppingCart className="w-5 h-5" />
+                  </Link>
+                  <Link href="/favorites" className="hover:text-gray-600 transition hidden sm:block">
+                    <Heart className="w-5 h-5" />
+                  </Link>
+                </>
+              )}
               {user ? (
                 <Link href="/profile" className="text-sm font-medium hover:text-gray-600 transition flex items-center gap-2">
                   <User className="w-5 h-5" />
                   <span className="hidden sm:inline">{user.firstName}</span>
                 </Link>
               ) : (
-                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Войти</Link>
+                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Кіру</Link>
               )}
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 md:py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         <Link href="/catalog" className="inline-flex items-center text-sm text-gray-600 hover:text-black mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Продолжить покупки
+          Сатып алуды жалғастыру
         </Link>
 
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8">Корзина</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8">Себет</h1>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🛒</div>
-            <h2 className="text-2xl font-bold mb-2">Корзина пуста</h2>
-            <p className="text-gray-600 mb-6">Добавьте товары из каталога</p>
+            <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Себет бос</h2>
+            <p className="text-gray-600 mb-6">Каталогтан тауарларды қосыңыз</p>
             <Link href="/catalog" className="inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition">
-              Перейти в каталог
+              Каталогқа өту
             </Link>
           </div>
         ) : (
@@ -191,14 +200,14 @@ export default function CartPage() {
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200"></div>
                     )}
                   </div>
 
                   <div className="flex-1">
                     <h3 className="font-bold text-lg mb-2">{item.name}</h3>
                     <p className="text-gray-600 mb-3">
-                      ${item.price} / день × {calculateDays(item.startDate, item.endDate)} дней
+                      {item.price} ₸ / день × {calculateDays(item.startDate, item.endDate)} дней
                     </p>
                     
                     {item.startDate && item.endDate && (
@@ -235,7 +244,7 @@ export default function CartPage() {
 
                   <div className="text-right sm:text-left sm:ml-auto">
                     <p className="text-xl sm:text-2xl font-bold">
-                      ${(item.price * item.quantity * calculateDays(item.startDate, item.endDate)).toFixed(2)}
+                      {(item.price * item.quantity * calculateDays(item.startDate, item.endDate)).toFixed(2)} ₸
                     </p>
                   </div>
                 </div>
@@ -245,24 +254,24 @@ export default function CartPage() {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-gray-50 rounded-xl p-6 sticky top-24">
-                <h2 className="text-xl font-bold mb-6">Итого</h2>
+                <h2 className="text-xl font-bold mb-6">Барлығы</h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-gray-600">
-                    <span>Подытог:</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>Аралық сома:</span>
+                    <span>{subtotal.toFixed(2)} ₸</span>
                   </div>
 
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Скидка ({discount}%):</span>
-                      <span>-${discountAmount.toFixed(2)}</span>
+                      <span>Жеңілдік ({discount}%):</span>
+                      <span>-{discountAmount.toFixed(2)} ₸</span>
                     </div>
                   )}
 
                   <div className="border-t pt-4 flex justify-between text-xl font-bold">
-                    <span>Всего:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>Барлығы:</span>
+                    <span>{total.toFixed(2)} ₸</span>
                   </div>
                 </div>
 
@@ -274,38 +283,38 @@ export default function CartPage() {
                       type="text"
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      placeholder="Введите промокод"
+                      placeholder="Промокодты енгізіңіз"
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                     />
                     <button
                       onClick={applyPromoCode}
                       className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-sm font-medium"
                     >
-                      Применить
+                      Қолдану
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Введите промокод для получения скидки</p>
+                  <p className="text-xs text-gray-500 mt-2">Жеңілдік алу үшін промокодты енгізіңіз</p>
                 </div>
 
                 <button
                   onClick={handleCheckout}
                   className="w-full bg-black text-white py-4 rounded-lg font-medium hover:bg-gray-800 transition"
                 >
-                  Оформить заказ
+                  Тапсырыс беру
                 </button>
 
                 <div className="mt-6 space-y-3 text-sm text-gray-600">
                   <div className="flex items-start gap-2">
                     <span>✓</span>
-                    <span>Безопасная оплата</span>
+                    <span>Қауіпсіз төлем</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span>✓</span>
-                    <span>Гарантия возврата</span>
+                    <span>Қайтару кепілдігі</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span>✓</span>
-                    <span>Поддержка 24/7</span>
+                    <span>Қолдау 24/7</span>
                   </div>
                 </div>
               </div>
@@ -315,35 +324,35 @@ export default function CartPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-16 md:mt-24">
+      <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white mt-16 md:mt-24">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">CINERENT</h3>
-              <p className="text-gray-400 text-sm">Профессиональное кинооборудование в аренду</p>
+              <h3 className="font-bold text-lg mb-4">RENT MEYRAM</h3>
+              <p className="text-blue-200 text-sm">Кәсіби кино жабдықтарын жалға беру</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Компания</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
-                <li><Link href="/contacts" className="hover:text-white transition">Контакты</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/about" className="hover:text-white transition">Біз туралы</Link></li>
+                <li><Link href="/contacts" className="hover:text-white transition">Байланыс</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Каталог</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/catalog" className="hover:text-white transition">Все товары</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/catalog" className="hover:text-white transition">Барлық тауарлар</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Поддержка</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition">Помощь</Link></li>
+              <h4 className="font-bold mb-4">Қолдау</h4>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/help" className="hover:text-white transition">Көмек</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            © 2026 CINERENT. Все права защищены.
+          <div className="border-t border-blue-700 mt-8 pt-8 text-center text-sm text-blue-200">
+            © 2026 RENT MEYRAM. Барлық құқықтар қорғалған.
           </div>
         </div>
       </footer>

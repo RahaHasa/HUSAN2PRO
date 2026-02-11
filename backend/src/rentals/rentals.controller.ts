@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Patch } from '@nestjs/common';
 import { RentalsService } from './rentals.service';
-import { Rental } from './rental.entity';
+import { Rental, PaymentStatus } from './rental.entity';
 
 @Controller('api/rentals')
 export class RentalsController {
@@ -24,6 +24,11 @@ export class RentalsController {
   @Put(':id')
   update(@Param('id') id: string, @Body() rental: Partial<Rental>) {
     return this.rentalsService.update(+id, rental);
+  }
+
+  @Patch(':id/payment')
+  updatePaymentStatus(@Param('id') id: string, @Body() body: { paymentStatus: PaymentStatus }) {
+    return this.rentalsService.updatePaymentStatus(+id, body.paymentStatus);
   }
 
   @Delete(':id')

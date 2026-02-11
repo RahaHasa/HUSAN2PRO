@@ -9,6 +9,12 @@ export enum RentalStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+}
+
 @Entity('rentals')
 export class Rental {
   @PrimaryGeneratedColumn()
@@ -41,6 +47,13 @@ export class Rental {
     default: RentalStatus.PENDING,
   })
   status: RentalStatus;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+  })
+  paymentStatus: PaymentStatus;
 
   @Column({ type: 'text', nullable: true })
   notes: string;

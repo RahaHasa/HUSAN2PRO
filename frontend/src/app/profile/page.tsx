@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, Mail, Phone, Calendar, ShoppingBag, LogOut, Edit2, Save, X, Camera, Upload } from 'lucide-react';
 import { api } from '@/lib/api-new';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function ProfilePage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -14,6 +15,21 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [avatar, setAvatar] = useState<string>('');
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   const [editData, setEditData] = useState({
     firstName: '',
     lastName: '',
@@ -88,8 +104,8 @@ export default function ProfilePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
-        <div className="text-lg font-medium text-blue-600">Загрузка...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-blue-200 to-cyan-100">
+        <div className="text-lg font-medium text-blue-600">Жүктелуде...</div>
       </div>
     );
   }
@@ -99,27 +115,29 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-cyan-100">
       {/* Header */}
-      <header className="bg-white border-b border-blue-100 shadow-sm">
+      <header className="bg-white/80 backdrop-blur-md border-b border-blue-200 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link href="/" className="text-2xl font-bold text-blue-600">CINERENT</Link>
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">
-                На главную
-              </Link>
-              {user.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">
-                  Админ-панель
-                </Link>
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="RENT MEYRAM" className="h-12 sm:h-16 md:h-20" />
+            </Link>
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Басты бет</Link>
+              <Link href="/catalog" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Каталог</Link>
+              {user && user.role !== 'admin' && (
+                <Link href="/rentals" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Менің жалға алуым</Link>
               )}
-            </div>
+              {user.role === 'admin' && (
+                <Link href="/admin" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">Әкімші</Link>
+              )}
+            </nav>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-12">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-blue-100">
@@ -132,8 +150,8 @@ export default function ProfilePage() {
                     className="bg-white/20 hover:bg-white/30 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg flex items-center gap-1 sm:gap-2 transition text-xs sm:text-sm"
                   >
                     <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Редактировать</span>
-                    <span className="sm:hidden">Изменить</span>
+                    <span className="hidden sm:inline">Өзгерту</span>
+                    <span className="sm:hidden">Өзгерту</span>
                   </button>
                 ) : (
                   <>
@@ -142,14 +160,14 @@ export default function ProfilePage() {
                       className="bg-white/20 hover:bg-white/30 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg flex items-center gap-1 sm:gap-2 transition text-xs sm:text-sm"
                     >
                       <Save className="w-3 h-3 sm:w-4 sm:h-4" />
-                      Сохранить
+                      Сақтау
                     </button>
                     <button
                       onClick={() => setIsEditing(false)}
                       className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
                     >
                       <X className="w-4 h-4" />
-                      Отмена
+                      Болдырмау
                     </button>
                   </>
                 )}
@@ -199,11 +217,11 @@ export default function ProfilePage() {
 
             {/* Profile Info */}
             <div className="p-4 sm:p-6 md:p-8">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Личные данные</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Жеке ақпарат</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Имя
+                    Аты
                   </label>
                   {isEditing ? (
                     <input
@@ -219,7 +237,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Фамилия
+                    Тегі
                   </label>
                   {isEditing ? (
                     <input
@@ -235,7 +253,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email адрес
+                    Email мекенжайы
                   </label>
                   {isEditing ? (
                     <div>
@@ -274,16 +292,16 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Настройки уведомлений */}
-              <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  🔔 Настройки уведомлений
+              {/* Хабарландырулар баптаулары */}
+              <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  Хабарландырулар баптаулары
                 </h3>
                 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email для уведомлений
+                      Хабарландырулар үшін Email
                     </label>
                     {isEditing ? (
                       <input
@@ -302,7 +320,7 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      WhatsApp для уведомлений
+                      Хабарландырулар үшін WhatsApp
                     </label>
                     {isEditing ? (
                       <input
@@ -314,14 +332,14 @@ export default function ProfilePage() {
                       />
                     ) : (
                       <p className="px-4 py-3 bg-white rounded-lg text-gray-900">
-                        {user.notificationWhatsApp || user.phone || 'Не указан'}
+                        {user.notificationWhatsApp || user.phone || 'Көрсетілмеген'}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Предпочитаемый способ связи
+                      Байланыс әдісі
                     </label>
                     {isEditing ? (
                       <select
@@ -329,12 +347,12 @@ export default function ProfilePage() {
                         onChange={(e) => setEditData({ ...editData, preferredNotification: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                       >
-                        <option value="email">📧 Email</option>
-                        <option value="whatsapp">💬 WhatsApp</option>
+                        <option value="email">Email</option>
+                        <option value="whatsapp">WhatsApp</option>
                       </select>
                     ) : (
                       <p className="px-4 py-3 bg-white rounded-lg text-gray-900">
-                        {user.preferredNotification === 'whatsapp' ? '💬 WhatsApp' : '📧 Email'}
+                        {user.preferredNotification === 'whatsapp' ? 'WhatsApp' : 'Email'}
                       </p>
                     )}
                   </div>
@@ -359,100 +377,25 @@ export default function ProfilePage() {
                   className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium transition"
                 >
                   <LogOut className="w-5 h-5" />
-                  Выйти из аккаунта
+                  Шығу
                 </button>
               </div>
             </div>
           </div>
-
-          {/* Stats Cards */}
-          {user.role !== 'admin' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <ShoppingBag className="w-6 h-6" />
-                  </div>
-                  <span className="text-3xl font-bold">{rentals.length}</span>
-                </div>
-                <h3 className="text-sm font-medium text-blue-100">Аренды</h3>
-              </div>
-            </div>
-          )}
-
-          {/* Rentals Section - only for non-admin users */}
-          {user.role !== 'admin' && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-blue-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Мои аренды</h2>
-                <p className="text-sm text-gray-500">Список всех арендованного оборудования</p>
-              </div>
-            </div>
-
-            {rentals.length === 0 ? (
-              <div className="text-center py-12 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
-                <div className="text-6xl mb-4">🎬</div>
-                <p className="text-gray-600 font-medium mb-2">У вас пока нет аренд</p>
-                <p className="text-gray-500 text-sm mb-6">Арендуйте профессиональное оборудование для ваших проектов</p>
-                <Link
-                  href="/catalog"
-                  className="inline-block bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-cyan-700 transition shadow-lg hover:shadow-xl"
-                >
-                  Перейти в каталог
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {rentals.map((rental) => (
-                  <div
-                    key={rental.id}
-                    className="border-2 border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-lg transition group"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-2xl">🎥</span>
-                          <h3 className="font-bold text-gray-900 text-lg">
-                            {rental.product?.name || 'Товар'}
-                          </h3>
-                        </div>
-                        <div className="flex flex-wrap gap-3 text-sm">
-                          <div className="flex items-center gap-1 text-gray-600">
-                            <Calendar className="w-4 h-4" />
-                            <span>Начало: {new Date(rental.startDate).toLocaleDateString('ru-RU')}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-gray-600">
-                            <Calendar className="w-4 h-4" />
-                            <span>Конец: {new Date(rental.endDate).toLocaleDateString('ru-RU')}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-2xl text-gray-900">{rental.totalPrice} ₸</p>
-                        <p className="text-xs text-gray-500 mb-2">ID: #{rental.id}</p>
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                          rental.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : rental.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {rental.status === 'active' ? '✓ Активна' : rental.status === 'pending' ? '⏳ Ожидание' : rental.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          )}
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        confirmText="Отменить аренду"
+        cancelText="Не отменять"
+        type={confirmDialog.type}
+      />
     </div>
   );
 }

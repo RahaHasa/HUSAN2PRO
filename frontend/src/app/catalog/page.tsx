@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-new';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
-import { ShoppingCart, User, Heart, Menu, Search, Filter } from 'lucide-react';
+import { ShoppingCart, User, Heart, Menu, Search, Filter, ShoppingBag } from 'lucide-react';
+import { isFavorite, addToFavorites, removeFromFavorites } from '@/lib/favorites';
+import Toast from '@/components/Toast';
 
 export default function CatalogPage() {
   const { user } = useAuth();
@@ -13,6 +15,25 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  useEffect(() => {
+    loadFavorites();
+    
+    // Listen for favorites changes
+    const handleFavoritesChange = () => {
+      loadFavorites();
+    };
+    
+    window.addEventListener('favoritesChanged', handleFavoritesChange);
+    return () => window.removeEventListener('favoritesChanged', handleFavoritesChange);
+  }, []);
+
+  const loadFavorites = () => {
+    const favs = products.map(p => p.id).filter(id => isFavorite(id));
+    setFavorites(favs);
+  };
 
   useEffect(() => {
     Promise.all([
@@ -22,10 +43,55 @@ export default function CatalogPage() {
       .then(([productsData, categoriesData]) => {
         setProducts(productsData);
         setCategories(categoriesData);
+        loadFavorites();
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleToggleFavorite = (e: React.MouseEvent, product: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isFavorite(product.id)) {
+      removeFromFavorites(product.id);
+      setToast({ message: 'Таңдаулылардан жойылды', type: 'info' });
+    } else {
+      addToFavorites({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image
+      });
+      setToast({ message: 'Таңдаулыларға қосылды!', type: 'success' });
+    }
+    loadFavorites();
+  };
+
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingIndex = cartItems.findIndex((item: any) => item.id === product.id);
+    
+    if (existingIndex >= 0) {
+      cartItems[existingIndex].quantity += 1;
+    } else {
+      cartItems.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        startDate: '',
+        endDate: ''
+      });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+    setToast({ message: 'Себетке қосылды!', type: 'success' });
+  };
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -34,35 +100,42 @@ export default function CatalogPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-black">CINERENT</Link>
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 md:h-20">
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="RENT MEYRAM" className="h-12 sm:h-16 md:h-20" />
+            </Link>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Главная</Link>
-              <Link href="/catalog" className="text-sm font-medium text-black">Каталог</Link>
-              {user?.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Админ</Link>
+              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Басты бет</Link>
+              <Link href="/catalog" className="text-sm font-medium text-black">Каталог</Link>              {user && user.role !== 'admin' && (
+                <Link href="/rentals" className="text-sm font-medium hover:text-gray-600 transition">Менің жалға алуым</Link>
+              )}              {user?.role === 'admin' && (
+                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Әкімші</Link>
               )}
             </nav>
 
             <div className="flex items-center space-x-6">
-              <button className="hover:text-gray-600 transition">
-                <ShoppingCart className="w-5 h-5" />
-              </button>
-              <button className="hover:text-gray-600 transition">
-                <Heart className="w-5 h-5" />
-              </button>
+              {user?.role !== 'admin' && (
+                <>
+                  <Link href="/cart" className="hover:text-gray-600 transition">
+                    <ShoppingCart className="w-5 h-5" />
+                  </Link>
+                  <Link href="/favorites" className="hover:text-gray-600 transition">
+                    <Heart className="w-5 h-5" />
+                  </Link>
+                </>
+              )}
               {user ? (
                 <Link href="/profile" className="text-sm font-medium hover:text-gray-600 transition flex items-center gap-2">
                   <User className="w-5 h-5" />
                   {user.firstName}
                 </Link>
               ) : (
-                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Войти</Link>
+                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Кіру</Link>
               )}
               <button className="md:hidden">
                 <Menu className="w-6 h-6" />
@@ -75,8 +148,8 @@ export default function CatalogPage() {
       <main className="container mx-auto px-4 py-6 md:py-8">
         {/* Page Title */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Каталог оборудования</h1>
-          <p className="text-sm sm:text-base text-gray-600">{filteredProducts.length} товаров</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Жабдық каталогы</h1>
+          <p className="text-sm sm:text-base text-gray-600">{filteredProducts.length} тауар</p>
         </div>
 
         {/* Filters */}
@@ -86,7 +159,7 @@ export default function CatalogPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Поиск по названию..."
+              placeholder="Атауы бойынша іздеу..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
@@ -105,7 +178,7 @@ export default function CatalogPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Все категории
+                Барлық санаттар
               </button>
               {categories.map((category) => (
                 <button
@@ -127,101 +200,138 @@ export default function CatalogPage() {
         {/* Products Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="text-lg font-medium">Загрузка...</div>
+            <div className="text-lg font-medium">Жүктелуде...</div>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">Товары не найдены</p>
-            <p className="text-gray-400 mt-2">Попробуйте изменить параметры поиска</p>
+            <p className="text-gray-500 text-lg">Тауарлар табылмады</p>
+            <p className="text-gray-400 mt-2">Іздеу параметрлерін өзгертіп көріңіз</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {filteredProducts.map((product) => (
-              <Link
+              <div
                 key={product.id}
-                href={`/product/${product.id}`}
-                className="group bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition"
+                className="group bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition relative"
               >
-                <div className="aspect-square bg-gray-100 overflow-hidden relative">
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
-                  )}
-                  {!product.available && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
-                      Недоступен
-                    </div>
-                  )}
-                </div>
-                <div className="p-3 sm:p-4">
-                  <p className="text-xs text-gray-500 mb-1">{product.category?.name || 'Без категории'}</p>
-                  <h3 className="font-medium mb-2 line-clamp-2 text-sm sm:text-base">{product.name}</h3>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span className="text-base sm:text-lg font-bold">${product.price}/день</span>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      product.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {product.available ? 'Доступен' : 'Недоступен'}
-                    </span>
+                <Link href={`/product/${product.id}`} className="block">
+                  <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
+                    )}
+                    {!product.available && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
+                        Қолжетімсіз
+                      </div>
+                    )}
+                    
+                    {/* Favorite button */}
+                    <button
+                      onClick={(e) => handleToggleFavorite(e, product)}
+                      className={`absolute top-2 left-2 p-2 rounded-full backdrop-blur-sm transition ${
+                        favorites.includes(product.id)
+                          ? 'bg-red-500 text-white'
+                          : 'bg-white/80 text-gray-600 hover:bg-white'
+                      }`}
+                    >
+                      <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? 'fill-current' : ''}`} />
+                    </button>
                   </div>
-                </div>
-              </Link>
+                  <div className="p-3 sm:p-4">
+                    <p className="text-xs text-gray-500 mb-1">{product.category?.name || 'Санатсыз'}</p>
+                    <h3 className="font-medium mb-2 line-clamp-2 text-sm sm:text-base">{product.name}</h3>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-base sm:text-lg font-bold">{product.price} ₸/день</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          product.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {product.available ? 'Қолжетімді' : 'Қолжетімсіз'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+                
+                {/* Add to cart button - only for non-admin */}
+                {user?.role !== 'admin' && product.available && (
+                  <div className="p-3 sm:p-4 pt-0">
+                    <button
+                      onClick={(e) => handleAddToCart(e, product)}
+                      className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      Себетке
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-black text-white">
+      <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">CINERENT</h3>
-              <p className="text-gray-400 text-sm">
-                Профессиональная аренда кинооборудования для вашего творчества
+              <h3 className="text-xl font-bold mb-4">RENT MEYRAM</h3>
+              <p className="text-blue-200 text-sm">
+                Шығармашылығыңыз үшін кино жабдықтарын кәсіби жалға беру
               </p>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Каталог</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/catalog" className="hover:text-white transition">Все товары</Link></li>
-                <li><Link href="/catalog?category=cameras" className="hover:text-white transition">Камеры</Link></li>
-                <li><Link href="/catalog?category=lenses" className="hover:text-white transition">Объективы</Link></li>
-                <li><Link href="/catalog?category=light" className="hover:text-white transition">Свет</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/catalog" className="hover:text-white transition">Барлық тауарлар</Link></li>
+                <li><Link href="/catalog?category=cameras" className="hover:text-white transition">Камералар</Link></li>
+                <li><Link href="/catalog?category=lenses" className="hover:text-white transition">Объективтер</Link></li>
+                <li><Link href="/catalog?category=light" className="hover:text-white transition">Жарық</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Компания</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
-                <li><Link href="/contacts" className="hover:text-white transition">Контакты</Link></li>
-                <li><Link href="/faq" className="hover:text-white transition">FAQ</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition">Условия</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/about" className="hover:text-white transition">Біз туралы</Link></li>
+                <li><Link href="/contacts" className="hover:text-white transition">Байланыс</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition">Жиі қойылатын сұрақтар</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition">Шарттар</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Контакты</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>Email: info@cinerent.com</li>
+              <h4 className="font-semibold mb-4">Байланыс</h4>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li>Email: info@rentmeyram.com</li>
                 <li>Тел: +7 777 123 45 67</li>
-                <li>Адрес: г. Алматы</li>
+                <li>Мекенжай: Алматы қ.</li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 CINERENT. Все права защищены.</p>
+          <div className="border-t border-blue-700 pt-8 text-center text-sm text-blue-200">
+            <p>&copy; 2024 RENT MEYRAM. Барлық құқықтар қорғалған.</p>
           </div>
         </div>
       </footer>
+
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

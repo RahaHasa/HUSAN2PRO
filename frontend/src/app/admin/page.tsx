@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import Toast from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -23,7 +24,22 @@ export default function AdminPage() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [showRentalModal, setShowRentalModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -33,12 +49,10 @@ export default function AdminPage() {
     name: '',
     description: '',
     price: '',
-    pricePerHour: '',
-    pricePerWeek: '',
     image: '',
     categoryId: '',
     available: true,
-    hasFlexiblePricing: false,
+    stock: '1',
     specifications: ''
   });
 
@@ -54,6 +68,11 @@ export default function AdminPage() {
     validFrom: '',
     validUntil: '',
     active: true
+  });
+
+  const [rentalForm, setRentalForm] = useState({
+    status: '',
+    paymentStatus: ''
   });
 
   useEffect(() => {
@@ -92,17 +111,16 @@ export default function AdminPage() {
       await api.createProduct({
         ...productForm,
         price: parseFloat(productForm.price),
-        pricePerHour: productForm.pricePerHour ? parseFloat(productForm.pricePerHour) : null,
-        pricePerWeek: productForm.pricePerWeek ? parseFloat(productForm.pricePerWeek) : null,
+        stock: parseInt(productForm.stock) || 1,
         categoryId: parseInt(productForm.categoryId)
       });
       setShowProductModal(false);
       resetProductForm();
       loadData();
-      setToast({ message: 'Товар успешно добавлен!', type: 'success' });
+      setToast({ message: 'Тауар сәтті қосылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to create product:', error);
-      setToast({ message: 'Ошибка при создании товара', type: 'error' });
+      setToast({ message: 'Тауар жасау кезінде қате', type: 'error' });
     }
   };
 
@@ -111,32 +129,38 @@ export default function AdminPage() {
       await api.updateProduct(editingItem.id, {
         ...productForm,
         price: parseFloat(productForm.price),
-        pricePerHour: productForm.pricePerHour ? parseFloat(productForm.pricePerHour) : null,
-        pricePerWeek: productForm.pricePerWeek ? parseFloat(productForm.pricePerWeek) : null,
+        stock: parseInt(productForm.stock) || 1,
         categoryId: parseInt(productForm.categoryId)
       });
       setShowProductModal(false);
       setEditingItem(null);
       resetProductForm();
       loadData();
-      setToast({ message: 'Товар успешно обновлен!', type: 'success' });
+      setToast({ message: 'Тауар сәтті жаңартылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to update product:', error);
-      setToast({ message: 'Ошибка при обновлении товара', type: 'error' });
+      setToast({ message: 'Тауарды жаңарту кезінде қате', type: 'error' });
     }
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (confirm('Удалить этот товар?')) {
-      try {
-        await api.deleteProduct(id);
-        loadData();
-        setToast({ message: 'Товар успешно удален!', type: 'success' });
-      } catch (error) {
-        console.error('Failed to delete product:', error);
-        setToast({ message: 'Ошибка при удалении товара', type: 'error' });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Бұл тауарды жою керек пе?',
+      message: 'Бұл әрекетті болдырмауға болмайды. Тауар толығымен жойылады.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.deleteProduct(id);
+          loadData();
+          setToast({ message: 'Тауар сәтті жойылды!', type: 'success' });
+        } catch (error) {
+          console.error('Failed to delete product:', error);
+          setToast({ message: 'Тауарды жою кезінде қате', type: 'error' });
+        }
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
       }
-    }
+    });
   };
 
   const openEditProduct = (product: any) => {
@@ -145,12 +169,10 @@ export default function AdminPage() {
       name: product.name,
       description: product.description || '',
       price: product.pricePerDay?.toString() || product.price?.toString() || '',
-      pricePerHour: product.pricePerHour?.toString() || '',
-      pricePerWeek: product.pricePerWeek?.toString() || '',
       image: product.mainImage || product.image || '',
       categoryId: product.category?.id?.toString() || '',
       available: product.available,
-      hasFlexiblePricing: product.hasFlexiblePricing || false,
+      stock: product.stock?.toString() || '1',
       specifications: product.specifications || ''
     });
     setShowProductModal(true);
@@ -161,12 +183,10 @@ export default function AdminPage() {
       name: '',
       description: '',
       price: '',
-      pricePerHour: '',
-      pricePerWeek: '',
       image: '',
       categoryId: '',
       available: true,
-      hasFlexiblePricing: false,
+      stock: '1',
       specifications: ''
     });
   };
@@ -178,10 +198,10 @@ export default function AdminPage() {
       setShowCategoryModal(false);
       resetCategoryForm();
       loadData();
-      setToast({ message: 'Категория успешно добавлена!', type: 'success' });
+      setToast({ message: 'Санат сәтті қосылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to create category:', error);
-      setToast({ message: 'Ошибка при создании категории', type: 'error' });
+      setToast({ message: 'Санат жасау кезінде қате', type: 'error' });
     }
   };
 
@@ -192,24 +212,31 @@ export default function AdminPage() {
       setEditingItem(null);
       resetCategoryForm();
       loadData();
-      setToast({ message: 'Категория успешно обновлена!', type: 'success' });
+      setToast({ message: 'Санат сәтті жаңартылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to update category:', error);
-      setToast({ message: 'Ошибка при обновлении категории', type: 'error' });
+      setToast({ message: 'Санатты жаңарту кезінде қате', type: 'error' });
     }
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (confirm('Удалить эту категорию?')) {
-      try {
-        await api.deleteCategory(id);
-        loadData();
-        setToast({ message: 'Категория успешно удалена!', type: 'success' });
-      } catch (error) {
-        console.error('Failed to delete category:', error);
-        setToast({ message: 'Ошибка при удалении категории', type: 'error' });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Бұл санатты жою керек пе?',
+      message: 'Бұл санаттың барлық тауарлары санатсыз қалады.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.deleteCategory(id);
+          loadData();
+          setToast({ message: 'Санат сәтті жойылды!', type: 'success' });
+        } catch (error) {
+          console.error('Failed to delete category:', error);
+          setToast({ message: 'Санатты жою кезінде қате', type: 'error' });
+        }
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
       }
-    }
+    });
   };
 
   const openEditCategory = (category: any) => {
@@ -243,10 +270,10 @@ export default function AdminPage() {
       setShowDiscountModal(false);
       resetDiscountForm();
       loadData();
-      setToast({ message: 'Скидка успешно добавлена!', type: 'success' });
+      setToast({ message: 'Жеңілдік сәтті қосылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to create discount:', error);
-      setToast({ message: 'Ошибка при создании скидки', type: 'error' });
+      setToast({ message: 'Жеңілдік жасау кезінде қате', type: 'error' });
     }
   };
 
@@ -263,24 +290,31 @@ export default function AdminPage() {
       setEditingItem(null);
       resetDiscountForm();
       loadData();
-      setToast({ message: 'Скидка успешно обновлена!', type: 'success' });
+      setToast({ message: 'Жеңілдік сәтті жаңартылды!', type: 'success' });
     } catch (error) {
       console.error('Failed to update discount:', error);
-      setToast({ message: 'Ошибка при обновлении скидки', type: 'error' });
+      setToast({ message: 'Жеңілдікті жаңарту кезінде қате', type: 'error' });
     }
   };
 
   const handleDeleteDiscount = async (id: number) => {
-    if (confirm('Удалить эту скидку?')) {
-      try {
-        await api.deleteDiscount(id);
-        loadData();
-        setToast({ message: 'Скидка успешно удалена!', type: 'success' });
-      } catch (error) {
-        console.error('Failed to delete discount:', error);
-        setToast({ message: 'Ошибка при удалении скидки', type: 'error' });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Бұл жеңілдікті жою керек пе?',
+      message: 'Промокод пайдалануға қолжетімсіз болады.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.deleteDiscount(id);
+          loadData();
+          setToast({ message: 'Жеңілдік сәтті жойылды!', type: 'success' });
+        } catch (error) {
+          console.error('Failed to delete discount:', error);
+          setToast({ message: 'Жеңілдікті жою кезінде қате', type: 'error' });
+        }
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
       }
-    }
+    });
   };
 
   const openEditDiscount = (discount: any) => {
@@ -305,10 +339,64 @@ export default function AdminPage() {
     });
   };
 
+  // Rental handlers
+  const handleUpdateRental = async () => {
+    try {
+      await api.updateRental(editingItem.id, {
+        status: rentalForm.status,
+        paymentStatus: rentalForm.paymentStatus
+      });
+      setShowRentalModal(false);
+      setEditingItem(null);
+      resetRentalForm();
+      loadData();
+      setToast({ message: 'Жалға алу сәтті жаңартылды!', type: 'success' });
+    } catch (error) {
+      console.error('Failed to update rental:', error);
+      setToast({ message: 'Жалға алуды жаңарту кезінде қате', type: 'error' });
+    }
+  };
+
+  const handleDeleteRental = async (id: number) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Бұл жалға алуды жою керек пе?',
+      message: 'Жалға алу туралы барлық ақпарат жойылады.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          await api.deleteRental(id);
+          loadData();
+          setToast({ message: 'Жалға алу сәтті жойылды!', type: 'success' });
+        } catch (error) {
+          console.error('Failed to delete rental:', error);
+          setToast({ message: 'Жалға алуды жою кезінде қате', type: 'error' });
+        }
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+      }
+    });
+  };
+
+  const openEditRental = (rental: any) => {
+    setEditingItem(rental);
+    setRentalForm({
+      status: rental.status || 'pending',
+      paymentStatus: rental.paymentStatus || 'pending'
+    });
+    setShowRentalModal(true);
+  };
+
+  const resetRentalForm = () => {
+    setRentalForm({
+      status: '',
+      paymentStatus: ''
+    });
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Загрузка...</div>
+        <div className="text-lg">Жүктелуде...</div>
       </div>
     );
   }
@@ -320,12 +408,12 @@ export default function AdminPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">Админ-панель</h1>
-              <p className="text-xs sm:text-sm text-gray-500">Управление контентом</p>
+              <h1 className="text-xl sm:text-2xl font-bold">Әкімші панелі</h1>
+              <p className="text-xs sm:text-sm text-gray-500">Мазмұнды басқару</p>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Link href="/" className="text-xs sm:text-sm font-medium text-gray-600 hover:text-black transition">
-                На сайт
+                Басты бетке
               </Link>
               <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
                 {user?.firstName} {user?.lastName}
@@ -340,7 +428,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Товары</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Тауарлар</h3>
               <span className="text-xl sm:text-2xl">📦</span>
             </div>
             <p className="text-2xl sm:text-3xl font-bold">{products.length}</p>
@@ -348,7 +436,7 @@ export default function AdminPage() {
           
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Категории</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Санаттар</h3>
               <span className="text-xl sm:text-2xl">🏷️</span>
             </div>
             <p className="text-2xl sm:text-3xl font-bold">{categories.length}</p>
@@ -356,7 +444,7 @@ export default function AdminPage() {
           
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Аренды</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Жалға алулар</h3>
               <span className="text-xl sm:text-2xl">🎬</span>
             </div>
             <p className="text-2xl sm:text-3xl font-bold">{rentals.length}</p>
@@ -364,7 +452,7 @@ export default function AdminPage() {
           
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Скидки</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Жеңілдіктер</h3>
               <span className="text-xl sm:text-2xl">🎁</span>
             </div>
             <p className="text-2xl sm:text-3xl font-bold">{discounts.length}</p>
@@ -383,7 +471,7 @@ export default function AdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Товары ({products.length})
+                Тауарлар ({products.length})
               </button>
               <button
                 onClick={() => setActiveTab('categories')}
@@ -393,7 +481,7 @@ export default function AdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Категории ({categories.length})
+                Санаттар ({categories.length})
               </button>
               <button
                 onClick={() => setActiveTab('rentals')}
@@ -403,7 +491,7 @@ export default function AdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Аренды ({rentals.length})
+                Жалға алулар ({rentals.length})
               </button>
               <button
                 onClick={() => setActiveTab('discounts')}
@@ -413,7 +501,7 @@ export default function AdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Скидки ({discounts.length})
+                Жеңілдіктер ({discounts.length})
               </button>
             </nav>
           </div>
@@ -423,7 +511,7 @@ export default function AdminPage() {
             {activeTab === 'products' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Управление товарами</h2>
+                  <h2 className="text-lg sm:text-xl font-bold">Тауарларды басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
@@ -433,8 +521,8 @@ export default function AdminPage() {
                     className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Добавить товар</span>
-                    <span className="sm:hidden">Добавить</span>
+                    <span className="hidden sm:inline">Тауар қосу</span>
+                    <span className="sm:hidden">Қосу</span>
                   </button>
                 </div>
 
@@ -442,12 +530,13 @@ export default function AdminPage() {
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b">
                       <tr>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Изображение</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Название</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Категория</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Цена</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden sm:table-cell">Статус</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Действия</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Сурет</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Атауы</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Санат</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Баға</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden lg:table-cell">Қойма</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden sm:table-cell">Мәртебе</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Әрекеттер</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -457,7 +546,8 @@ export default function AdminPage() {
                             {product.image ? (
                               <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
                             ) : (
-                              <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xl">📦</div>
+                              <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                              </div>
                             )}
                           </td>
                           <td className="py-3 px-4">
@@ -465,12 +555,17 @@ export default function AdminPage() {
                             <div className="text-xs text-gray-500 md:hidden">{product.category?.name}</div>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 hidden md:table-cell">{product.category?.name || '-'}</td>
-                          <td className="py-3 px-4 font-medium text-sm">${product.price}</td>
+                          <td className="py-3 px-4 font-medium text-sm">{product.price} ₸</td>
+                          <td className="py-3 px-4 text-sm hidden lg:table-cell">
+                            <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {product.stock || 0} шт
+                            </span>
+                          </td>
                           <td className="py-3 px-4 hidden sm:table-cell">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               product.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                             }`}>
-                              {product.available ? 'Доступен' : 'Недоступен'}
+                              {product.available ? 'Қолжетімді' : 'Қолжетімсіз'}
                             </span>
                           </td>
                           <td className="py-3 px-4">
@@ -501,7 +596,7 @@ export default function AdminPage() {
             {activeTab === 'categories' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Управление категориями</h2>
+                  <h2 className="text-lg sm:text-xl font-bold">Санаттарды басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
@@ -511,8 +606,8 @@ export default function AdminPage() {
                     className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Добавить категорию</span>
-                    <span className="sm:hidden">Добавить</span>
+                    <span className="hidden sm:inline">Санат қосу</span>
+                    <span className="sm:hidden">Қосу</span>
                   </button>
                 </div>
 
@@ -536,7 +631,7 @@ export default function AdminPage() {
                           </button>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">{category.description || 'Без описания'}</p>
+                      <p className="text-sm text-gray-600">{category.description || 'Сипаттамасыз'}</p>
                     </div>
                   ))}
                 </div>
@@ -546,16 +641,18 @@ export default function AdminPage() {
             {/* Rentals Tab */}
             {activeTab === 'rentals' && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold mb-6">Управление арендами</h2>
+                <h2 className="text-lg sm:text-xl font-bold mb-6">Жалға алуларды басқару</h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b">
                       <tr>
                         <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">ID</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Пользователь</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Товар</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Период</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Статус</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Пайдаланушы</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Тауар</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Кезең</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden lg:table-cell">Төлем</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Мәртебе</th>
+                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Әрекеттер</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -567,14 +664,41 @@ export default function AdminPage() {
                           <td className="py-3 px-4 text-xs">
                             {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}
                           </td>
+                          <td className="py-3 px-4 hidden lg:table-cell">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              rental.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
+                              rental.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {rental.paymentStatus === 'paid' ? '✓ Төленді' : 
+                               rental.paymentStatus === 'failed' ? '✗ Қате' : '⏳ Күтуде'}
+                            </span>
+                          </td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               rental.status === 'active' ? 'bg-green-100 text-green-700' :
                               rental.status === 'completed' ? 'bg-gray-100 text-gray-700' :
                               'bg-yellow-100 text-yellow-700'
                             }`}>
-                              {rental.status}
+                              {rental.status === 'active' ? '✓ Белсенді' : 
+                               rental.status === 'completed' ? '✓ Аяқталды' : '⏳ Күту'}
                             </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openEditRental(rental)}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRental(rental.id)}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -588,7 +712,7 @@ export default function AdminPage() {
             {activeTab === 'discounts' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Управление скидками</h2>
+                  <h2 className="text-lg sm:text-xl font-bold">Жеңілдіктерді басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
@@ -598,8 +722,8 @@ export default function AdminPage() {
                     className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
                   >
                     <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Добавить скидку</span>
-                    <span className="sm:hidden">Добавить</span>
+                    <span className="hidden sm:inline">Жеңілдік қосу</span>
+                    <span className="sm:hidden">Қосу</span>
                   </button>
                 </div>
 
@@ -632,7 +756,7 @@ export default function AdminPage() {
                         <span className={`inline-block px-2 py-1 rounded-full ${
                           discount.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>
-                          {discount.isActive ? 'Активна' : 'Неактивна'}
+                          {discount.isActive ? 'Белсенді' : 'Белсенді емес'}
                         </span>
                       </div>
                     </div>
@@ -650,7 +774,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold">
-                {editingItem ? 'Редактировать товар' : 'Добавить товар'}
+                {editingItem ? 'Тауарды өзгерту' : 'Тауар қосу'}
               </h3>
               <button onClick={() => setShowProductModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
@@ -659,7 +783,7 @@ export default function AdminPage() {
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Название</label>
+                <label className="block text-sm font-medium mb-2">Атауы</label>
                 <input
                   type="text"
                   value={productForm.name}
@@ -670,7 +794,7 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Описание</label>
+                <label className="block text-sm font-medium mb-2">Сипаттамасы</label>
                 <textarea
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
@@ -681,13 +805,13 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Категория</label>
+                <label className="block text-sm font-medium mb-2">Санат</label>
                 <select
                   value={productForm.categoryId}
                   onChange={(e) => setProductForm({ ...productForm, categoryId: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                 >
-                  <option value="">Выберите категорию</option>
+                  <option value="">Санатты таңдаңыз</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
@@ -695,10 +819,10 @@ export default function AdminPage() {
               </div>
 
               <div className="border-t pt-4">
-                <h3 className="text-sm font-semibold mb-3">Цены аренды</h3>
-                <div className="space-y-4">
+                <h3 className="text-sm font-semibold mb-3">Жалға алу бағалары</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Цена за день ($) *</label>
+                    <label className="block text-sm font-medium mb-2">Күніне бағасы (₸) *</label>
                     <input
                       type="number"
                       value={productForm.price}
@@ -707,48 +831,22 @@ export default function AdminPage() {
                       placeholder="150"
                     />
                   </div>
-
-                  <div className="flex items-center mb-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Қоймадағы саны *</label>
                     <input
-                      type="checkbox"
-                      id="hasFlexiblePricing"
-                      checked={productForm.hasFlexiblePricing}
-                      onChange={(e) => setProductForm({ ...productForm, hasFlexiblePricing: e.target.checked })}
-                      className="w-4 h-4 rounded"
+                      type="number"
+                      min="0"
+                      value={productForm.stock}
+                      onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                      placeholder="1"
                     />
-                    <label htmlFor="hasFlexiblePricing" className="ml-2 text-sm font-medium">🔑 Гибкие тарифы (час/неделя)</label>
                   </div>
-                  
-                  {productForm.hasFlexiblePricing && (
-                    <div className="grid grid-cols-2 gap-4 pl-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Цена за час ($)</label>
-                        <input
-                          type="number"
-                          value={productForm.pricePerHour}
-                          onChange={(e) => setProductForm({ ...productForm, pricePerHour: e.target.value })}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                          placeholder="25"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Цена за неделю ($)</label>
-                        <input
-                          type="number"
-                          value={productForm.pricePerWeek}
-                          onChange={(e) => setProductForm({ ...productForm, pricePerWeek: e.target.value })}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                          placeholder="900"
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Изображение товара</label>
+                <label className="block text-sm font-medium mb-2">Тауар суреті</label>
                 <div className="flex items-start gap-4">
                   {productForm.image && (
                     <div className="relative w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden">
@@ -784,7 +882,7 @@ export default function AdminPage() {
                       className="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition cursor-pointer"
                     >
                       <Upload className="w-5 h-5 text-gray-400" />
-                      <span className="text-sm text-gray-600">Загрузить изображение</span>
+                      <span className="text-sm text-gray-600">Сурет жүктеу</span>
                     </label>
                     <p className="text-xs text-gray-500 mt-2">PNG, JPG, WEBP до 5MB</p>
                   </div>
@@ -792,7 +890,7 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Характеристики</label>
+                <label className="block text-sm font-medium mb-2">Сипаттамалары</label>
                 <textarea
                   value={productForm.specifications}
                   onChange={(e) => setProductForm({ ...productForm, specifications: e.target.value })}
@@ -810,7 +908,7 @@ export default function AdminPage() {
                   onChange={(e) => setProductForm({ ...productForm, available: e.target.checked })}
                   className="w-4 h-4 rounded"
                 />
-                <label htmlFor="available" className="ml-2 text-sm font-medium">Доступен для аренды</label>
+                <label htmlFor="available" className="ml-2 text-sm font-medium">Жалға алуға қолжетімді</label>
               </div>
             </div>
 
@@ -819,14 +917,14 @@ export default function AdminPage() {
                 onClick={() => setShowProductModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50"
               >
-                Отмена
+                Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateProduct : handleCreateProduct}
                 className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {editingItem ? 'Обновить' : 'Создать'}
+                {editingItem ? 'Жаңарту' : 'Жасау'}
               </button>
             </div>
           </div>
@@ -839,7 +937,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-xl max-w-md w-full">
             <div className="border-b px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold">
-                {editingItem ? 'Редактировать категорию' : 'Добавить категорию'}
+                {editingItem ? 'Санатты өзгерту' : 'Санат қосу'}
               </h3>
               <button onClick={() => setShowCategoryModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
@@ -848,29 +946,29 @@ export default function AdminPage() {
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Название</label>
+                <label className="block text-sm font-medium mb-2">Атауы</label>
                 <input
                   type="text"
                   value={categoryForm.name}
                   onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                  placeholder="Камеры"
+                  placeholder="Камералар"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Описание</label>
+                <label className="block text-sm font-medium mb-2">Сипаттамасы</label>
                 <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                   rows={3}
-                  placeholder="Профессиональные камеры..."
+                  placeholder="Профессиональды камералар..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Фото категории</label>
+                <label className="block text-sm font-medium mb-2">Санат суреті</label>
                 {categoryForm.image && (
                   <div className="mb-3 relative inline-block">
                     <img 
@@ -910,14 +1008,14 @@ export default function AdminPage() {
                 onClick={() => setShowCategoryModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50"
               >
-                Отмена
+                Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateCategory : handleCreateCategory}
                 className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {editingItem ? 'Обновить' : 'Создать'}
+                {editingItem ? 'Жаңарту' : 'Жасау'}
               </button>
             </div>
           </div>
@@ -930,7 +1028,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-xl max-w-md w-full">
             <div className="border-b px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold">
-                {editingItem ? 'Редактировать скидку' : 'Добавить скидку'}
+                {editingItem ? 'Жеңілдікті өзгерту' : 'Жеңілдік қосу'}
               </h3>
               <button onClick={() => setShowDiscountModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-6 h-6" />
@@ -950,7 +1048,7 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Процент скидки</label>
+                <label className="block text-sm font-medium mb-2">Жеңілдік пайызы</label>
                 <input
                   type="number"
                   value={discountForm.percentage}
@@ -964,7 +1062,7 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Действует с</label>
+                  <label className="block text-sm font-medium mb-2">Басталу күні</label>
                   <input
                     type="date"
                     value={discountForm.validFrom}
@@ -974,7 +1072,7 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">До</label>
+                  <label className="block text-sm font-medium mb-2">Аяқталу күні</label>
                   <input
                     type="date"
                     value={discountForm.validUntil}
@@ -992,7 +1090,7 @@ export default function AdminPage() {
                   onChange={(e) => setDiscountForm({ ...discountForm, active: e.target.checked })}
                   className="w-4 h-4 rounded"
                 />
-                <label htmlFor="active" className="ml-2 text-sm font-medium">Активна</label>
+                <label htmlFor="active" className="ml-2 text-sm font-medium">Белсенді</label>
               </div>
             </div>
 
@@ -1001,19 +1099,102 @@ export default function AdminPage() {
                 onClick={() => setShowDiscountModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50"
               >
-                Отмена
+                Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateDiscount : handleCreateDiscount}
                 className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {editingItem ? 'Обновить' : 'Создать'}
+                {editingItem ? 'Жаңарту' : 'Жасау'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Rental Edit Modal */}
+      {showRentalModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="border-b px-6 py-4 flex justify-between items-center sticky top-0 bg-white">
+              <h2 className="text-xl font-bold">Жалға алуды өзгерту #{editingItem?.id}</h2>
+              <button onClick={() => setShowRentalModal(false)} className="hover:bg-gray-100 p-2 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Тауар:</strong> {editingItem?.product?.name}
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Клиент:</strong> {editingItem?.user?.email}
+                </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  <strong>Кезең:</strong> {new Date(editingItem?.startDate).toLocaleDateString()} - {new Date(editingItem?.endDate).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Жалға алу мәртебесі</label>
+                <select
+                  value={rentalForm.status}
+                  onChange={(e) => setRentalForm({ ...rentalForm, status: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                >
+                  <option value="pending">⏳ Күту</option>
+                  <option value="active">✓ Белсенді</option>
+                  <option value="completed">✓ Аяқталды</option>
+                  <option value="cancelled">✗ Болдырылды</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Төлем мәртебесі</label>
+                <select
+                  value={rentalForm.paymentStatus}
+                  onChange={(e) => setRentalForm({ ...rentalForm, paymentStatus: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                >
+                  <option value="pending">💰 Төлемді күтуде</option>
+                  <option value="paid">✓ Төленді</option>
+                  <option value="failed">✗ Төлем қатесі</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="border-t px-6 py-4 flex justify-end gap-3">
+              <button
+                onClick={() => setShowRentalModal(false)}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Болдырмау
+              </button>
+              <button
+                onClick={handleUpdateRental}
+                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Сақтау
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        confirmText="Жою"
+        cancelText="Болдырмау"
+        type={confirmDialog.type}
+      />
 
       {/* Toast Notification */}
       {toast && (

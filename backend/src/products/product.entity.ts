@@ -58,7 +58,7 @@ export class Product {
   availableForSale: boolean;
 
   @Column({ default: 1 })
-  quantity: number;
+  stock: number;
 
   @Column('json', { nullable: true })
   specifications: Record<string, any>;

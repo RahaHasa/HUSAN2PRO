@@ -17,8 +17,6 @@ export default function ProductPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
-  const [showPricingTiers, setShowPricingTiers] = useState(false);
-  const [selectedPricingType, setSelectedPricingType] = useState<'hour' | 'day' | 'week'>('day');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -29,23 +27,14 @@ export default function ProductPage() {
     if (startDate && endDate && product) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const hours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
-      const days = Math.ceil(hours / 24);
-      const weeks = Math.ceil(days / 7);
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
       
-      let price = 0;
-      if (selectedPricingType === 'hour' && product.pricePerHour) {
-        price = hours * product.pricePerHour;
-      } else if (selectedPricingType === 'week' && product.pricePerWeek) {
-        price = weeks * product.pricePerWeek;
-      } else {
-        const basePrice = product.pricePerDay || product.price;
-        price = days * basePrice;
-      }
+      const basePrice = product.pricePerDay || product.price;
+      const price = days * basePrice;
       
       setTotalPrice(price > 0 ? price : 0);
     }
-  }, [startDate, endDate, product, selectedPricingType]);
+  }, [startDate, endDate, product]);
 
   const loadProduct = async () => {
     try {
@@ -79,7 +68,7 @@ export default function ProductPage() {
     }
     
     localStorage.setItem('cart', JSON.stringify(cartItems));
-    setToast({ message: 'Товар добавлен в корзину!', type: 'success' });
+    setToast({ message: 'Тауар себетке қосылды!', type: 'success' });
   };
 
   const handleRentNow = async () => {
@@ -89,7 +78,7 @@ export default function ProductPage() {
     }
 
     if (!startDate || !endDate) {
-      setToast({ message: 'Пожалуйста, выберите даты аренды', type: 'error' });
+      setToast({ message: 'Жалға алу күндерін таңдаңыз', type: 'error' });
       return;
     }
 
@@ -102,20 +91,20 @@ export default function ProductPage() {
         rentalPrice: totalPrice,
         totalPrice
       });
-      setToast({ message: 'Аренда успешно оформлена!', type: 'success' });
+      setToast({ message: 'Жалға алу сәтті рәсімделді!', type: 'success' });
       setTimeout(() => {
         router.push('/profile');
       }, 1500);
     } catch (error) {
       console.error('Failed to create rental:', error);
-      setToast({ message: 'Ошибка при оформлении аренды', type: 'error' });
+      setToast({ message: 'Жалға алуды рәсімдеу кезінде қате', type: 'error' });
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-lg font-medium">Загрузка...</div>
+        <div className="text-lg font-medium">Жүктелуде...</div>
       </div>
     );
   }
@@ -124,9 +113,9 @@ export default function ProductPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Товар не найден</h1>
+          <h1 className="text-2xl font-bold mb-4">Тауар табылмады</h1>
           <Link href="/catalog" className="text-blue-600 hover:underline">
-            Вернуться в каталог
+            Каталогқа оралу
           </Link>
         </div>
       </div>
@@ -139,20 +128,24 @@ export default function ProductPage() {
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-black">CINERENT</Link>
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="RENT MEYRAM" className="h-10" />
+            </Link>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Главная</Link>
+              <Link href="/" className="text-sm font-medium hover:text-gray-600 transition">Басты бет</Link>
               <Link href="/catalog" className="text-sm font-medium hover:text-gray-600 transition">Каталог</Link>
               {user?.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Админ</Link>
+                <Link href="/admin" className="text-sm font-medium hover:text-gray-600 transition">Әкімші</Link>
               )}
             </nav>
 
             <div className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/cart" className="hover:text-gray-600 transition hidden sm:block">
-                <ShoppingCart className="w-5 h-5" />
-              </Link>
+              {user?.role !== 'admin' && (
+                <Link href="/cart" className="hover:text-gray-600 transition hidden sm:block">
+                  <ShoppingCart className="w-5 h-5" />
+                </Link>
+              )}
               <button className="hover:text-gray-600 transition hidden sm:block">
                 <Heart className="w-5 h-5" />
               </button>
@@ -162,7 +155,7 @@ export default function ProductPage() {
                   <span className="hidden sm:inline">{user.firstName}</span>
                 </Link>
               ) : (
-                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Войти</Link>
+                <Link href="/login" className="text-sm font-medium hover:text-gray-600 transition">Кіру</Link>
               )}
             </div>
           </div>
@@ -172,7 +165,7 @@ export default function ProductPage() {
       <main className="container mx-auto px-4 py-6 md:py-12">
         <Link href="/catalog" className="inline-flex items-center text-sm text-gray-600 hover:text-black mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Назад в каталог
+          Каталогқа қайту
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
@@ -190,104 +183,58 @@ export default function ProductPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium">
-                  {product.category?.name || 'Без категории'}
+                  {product.category?.name || 'Санатсыз'}
                 </span>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   product.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                 }`}>
-                  {product.available ? '✓ Доступен' : '✗ Недоступен'}
+                  {product.available ? 'Қолжетімді' : 'Қолжетімсіз'}
                 </span>
+                {product.stock !== undefined && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    product.stock > 5 ? 'bg-blue-100 text-blue-700' : 
+                    product.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    📦 Қоймада: {product.stock} дана
+                  </span>
+                )}
               </div>
               
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{product.name}</h1>
               
               <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-4xl sm:text-5xl font-bold">${product.price}</span>
+                <span className="text-4xl sm:text-5xl font-bold">{product.price} ₸</span>
                 <span className="text-lg text-gray-500">/ день</span>
               </div>
 
               <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                {product.description || 'Описание отсутствует'}
+                {product.description || 'Сипаттама жоқ'}
               </p>
             </div>
 
             {product.specifications && (
               <div className="border-t pt-6">
-                <h2 className="text-xl font-bold mb-3">Характеристики</h2>
+                <h2 className="text-xl font-bold mb-3">Сипаттамалар</h2>
                 <p className="text-gray-600 whitespace-pre-line">{product.specifications}</p>
               </div>
             )}
 
             {/* Rental Form */}
-            {product.available && (
+            {user?.role === 'admin' ? (
+              <div className="border-t pt-6">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                  <p className="text-lg font-medium text-yellow-800">Әкімшілер тауарларды жалға ала алмайды</p>
+                  <p className="text-sm text-yellow-600 mt-2">Жалға алу үшін клиент ретінде кіріңіз</p>
+                </div>
+              </div>
+            ) : product.available && (
               <div className="border-t pt-6 space-y-4">
-                <h2 className="text-xl font-bold">Выберите период аренды</h2>
-                
-                {/* Flexible Pricing Toggle */}
-                {(product.pricePerHour || product.pricePerWeek) && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showPricingTiers}
-                        onChange={(e) => setShowPricingTiers(e.target.checked)}
-                        className="mt-1 w-5 h-5 rounded border-gray-300"
-                      />
-                      <div>
-                        <span className="font-medium text-gray-900">🔑 Гибкие тарифы</span>
-                        <p className="text-sm text-gray-600 mt-1">Выберите оптимальный тариф для вашей аренды</p>
-                      </div>
-                    </label>
-                    
-                    {showPricingTiers && (
-                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {product.pricePerHour && (
-                          <button
-                            onClick={() => setSelectedPricingType('hour')}
-                            className={`p-4 rounded-lg border-2 transition text-left ${
-                              selectedPricingType === 'hour'
-                                ? 'border-black bg-black text-white'
-                                : 'border-gray-200 bg-white hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="text-xs font-medium opacity-75 mb-1">За час</div>
-                            <div className="text-2xl font-bold">${product.pricePerHour}</div>
-                          </button>
-                        )}
-                        
-                        <button
-                          onClick={() => setSelectedPricingType('day')}
-                          className={`p-4 rounded-lg border-2 transition text-left ${
-                            selectedPricingType === 'day'
-                              ? 'border-black bg-black text-white'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="text-xs font-medium opacity-75 mb-1">За день</div>
-                          <div className="text-2xl font-bold">${product.pricePerDay || product.price}</div>
-                        </button>
-                        
-                        {product.pricePerWeek && (
-                          <button
-                            onClick={() => setSelectedPricingType('week')}
-                            className={`p-4 rounded-lg border-2 transition text-left ${
-                              selectedPricingType === 'week'
-                                ? 'border-black bg-black text-white'
-                                : 'border-gray-200 bg-white hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="text-xs font-medium opacity-75 mb-1">За неделю</div>
-                            <div className="text-2xl font-bold">${product.pricePerWeek}</div>
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <h2 className="text-xl font-bold">Жалға алу мерзімін таңдаңыз</h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Дата начала</label>
+                    <label className="block text-sm font-medium mb-2">Басталу күні</label>
                     <input
                       type="date"
                       value={startDate}
@@ -298,7 +245,7 @@ export default function ProductPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Дата окончания</label>
+                    <label className="block text-sm font-medium mb-2">Аяқталу күні</label>
                     <input
                       type="date"
                       value={endDate}
@@ -312,13 +259,11 @@ export default function ProductPage() {
                 {totalPrice > 0 && (
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center text-lg font-bold">
-                      <span>Итого:</span>
-                      <span>${totalPrice.toFixed(2)}</span>
+                      <span>Барлығы:</span>
+                      <span>{totalPrice.toFixed(2)} ₸</span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      {selectedPricingType === 'hour' && `${Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60))} часов`}
-                      {selectedPricingType === 'day' && `${Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} дней`}
-                      {selectedPricingType === 'week' && `${Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24 * 7))} недель`}
+                      {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} күн
                     </p>
                   </div>
                 )}
@@ -330,7 +275,7 @@ export default function ProductPage() {
                     className="flex-1 bg-black text-white px-6 py-4 rounded-lg font-medium hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <CheckCircle className="w-5 h-5" />
-                    Арендовать сейчас
+                    Қазір жалға алу
                   </button>
                   
                   <button
@@ -338,7 +283,7 @@ export default function ProductPage() {
                     className="flex-1 bg-white text-black px-6 py-4 rounded-lg font-medium border-2 border-black hover:bg-gray-50 transition flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    В корзину
+                    Себетке
                   </button>
                 </div>
               </div>
@@ -350,54 +295,54 @@ export default function ProductPage() {
         <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gray-50 p-6 rounded-xl">
             <div className="text-3xl mb-3">🚚</div>
-            <h3 className="font-bold mb-2">Быстрая доставка</h3>
-            <p className="text-sm text-gray-600">Доставка оборудования в течение 24 часов</p>
+            <h3 className="font-bold mb-2">Жылдам жеткізу</h3>
+            <p className="text-sm text-gray-600">Жабдықты 24 сағат ішінде жеткізу</p>
           </div>
           
           <div className="bg-gray-50 p-6 rounded-xl">
             <div className="text-3xl mb-3">🛡️</div>
-            <h3 className="font-bold mb-2">Гарантия качества</h3>
-            <p className="text-sm text-gray-600">Все оборудование проверено и исправно</p>
+            <h3 className="font-bold mb-2">Сапа кепілдігі</h3>
+            <p className="text-sm text-gray-600">Барлық жабдықтар тексерілген және жарамды</p>
           </div>
           
           <div className="bg-gray-50 p-6 rounded-xl">
             <div className="text-3xl mb-3">💬</div>
-            <h3 className="font-bold mb-2">Поддержка 24/7</h3>
-            <p className="text-sm text-gray-600">Консультации и помощь в любое время</p>
+            <h3 className="font-bold mb-2">Қолдау 24/7</h3>
+            <p className="text-sm text-gray-600">Кез келген уақытта кеңес және көмек</p>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-16 md:mt-24">
+      <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white mt-16 md:mt-24">
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">CINERENT</h3>
-              <p className="text-gray-400 text-sm">Профессиональное кинооборудование в аренду</p>
+              <h3 className="font-bold text-lg mb-4">RENT MEYRAM</h3>
+              <p className="text-blue-200 text-sm">Кәсіби кино жабдықтарын жалға беру</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Компания</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition">О нас</Link></li>
-                <li><Link href="/contacts" className="hover:text-white transition">Контакты</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/about" className="hover:text-white transition">Біз туралы</Link></li>
+                <li><Link href="/contacts" className="hover:text-white transition">Байланыс</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Каталог</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/catalog" className="hover:text-white transition">Все товары</Link></li>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/catalog" className="hover:text-white transition">Барлық тауарлар</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Поддержка</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/help" className="hover:text-white transition">Помощь</Link></li>
+              <h4 className="font-bold mb-4">Қолдау</h4>
+              <ul className="space-y-2 text-sm text-blue-200">
+                <li><Link href="/help" className="hover:text-white transition">Көмек</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            © 2026 CINERENT. Все права защищены.
+          <div className="border-t border-blue-700 mt-8 pt-8 text-center text-sm text-blue-200">
+            © 2026 RENT MEYRAM. Барлық құқықтар қорғалған.
           </div>
         </div>
       </footer>

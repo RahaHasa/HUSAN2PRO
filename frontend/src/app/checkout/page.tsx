@@ -100,7 +100,7 @@ export default function CheckoutPage() {
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100 flex items-center justify-center">
-        <div className="text-2xl text-gray-600">Загрузка...</div>
+        <div className="text-2xl text-gray-600">Жүктелуде...</div>
       </div>
     );
   }
@@ -112,12 +112,12 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Заказ оформлен!</h1>
-          <p className="text-gray-600 mb-2">Уведомление отправлено на:</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Тапсырыс рәсімделді!</h1>
+          <p className="text-gray-600 mb-2">Хабарландыру жіберілді:</p>
           <p className="text-lg font-semibold text-blue-600 mb-6">
             {formData.notificationMethod === 'email' ? formData.email : formData.whatsapp}
           </p>
-          <p className="text-sm text-gray-500">Перенаправление в профиль...</p>
+          <p className="text-sm text-gray-500">Профильге бағыттау...</p>
         </div>
       </div>
     );
@@ -128,18 +128,20 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-cyan-100">
         <header className="bg-white border-b border-blue-100 shadow-sm">
           <div className="container mx-auto px-4 py-4">
-            <Link href="/" className="text-2xl font-bold text-blue-600">CINERENT</Link>
+            <Link href="/" className="flex items-center">
+              <img src="/logo.svg" alt="RENT MEYRAM" className="h-12 sm:h-16 md:h-20" />
+            </Link>
           </div>
         </header>
         <div className="container mx-auto px-4 py-16 text-center">
           <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md mx-auto">
             <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Корзина пуста</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Себет бос</h2>
             <Link
               href="/catalog"
               className="inline-block bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-cyan-700 transition"
             >
-              Перейти в каталог
+              Каталогқа өту
             </Link>
           </div>
         </div>
@@ -154,22 +156,22 @@ export default function CheckoutPage() {
           <div className="flex justify-between items-center">
             <Link href="/" className="text-2xl font-bold text-blue-600">CINERENT</Link>
             <Link href="/cart" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition">
-              ← Назад в корзину
+              ← Себетке қайту
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Оформление заказа</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Тапсырысты рәсімдеу</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Форма */}
             <div className="lg:col-span-2 space-y-6">
               {/* Способ уведомления */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Способ связи</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Байланыс әдісі</h2>
                 
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
@@ -228,7 +230,7 @@ export default function CheckoutPage() {
 
               {/* Способ оплаты */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Способ оплаты</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Төлем әдісі</h2>
                 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
@@ -242,14 +244,14 @@ export default function CheckoutPage() {
                     />
                     <label htmlFor="card" className="flex-1 flex items-center gap-2 font-medium text-gray-900 cursor-pointer">
                       <CreditCard className="w-5 h-5 text-blue-600" />
-                      Банковская карта
+                      Карта
                     </label>
                   </div>
 
                   <div className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg opacity-50">
                     <input type="radio" disabled />
                     <label className="flex-1 flex items-center gap-2 font-medium text-gray-500">
-                      💰 Наличные (скоро)
+                      Қолма-қол ақша (жақында)
                     </label>
                   </div>
                 </div>
@@ -259,7 +261,7 @@ export default function CheckoutPage() {
             {/* Итоги заказа */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Ваш заказ</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Сіздің тапсырысыңыз</h2>
                 
                 <div className="space-y-3 mb-6">
                   {cart.map((item, index) => (
@@ -268,7 +270,7 @@ export default function CheckoutPage() {
                         {item.name} x{item.quantity}
                       </span>
                       <span className="font-medium text-gray-900">
-                        ${(item.totalPrice * item.quantity).toFixed(2)}
+                        {(item.totalPrice * item.quantity).toFixed(2)} ₸
                       </span>
                     </div>
                   ))}
@@ -276,21 +278,21 @@ export default function CheckoutPage() {
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
                   <div className="flex justify-between items-center text-gray-600 mb-2">
-                    <span>Подытог:</span>
-                    <span>${calculateSubtotal().toFixed(2)}</span>
+                    <span>Аралық қорытынды:</span>
+                    <span>{calculateSubtotal().toFixed(2)} ₸</span>
                   </div>
                   
                   {discount && (
                     <div className="flex justify-between items-center text-green-600 mb-2">
-                      <span>Скидка ({discount.code} - {discount.percentage}%):</span>
-                      <span>-${((calculateSubtotal() * discount.percentage) / 100).toFixed(2)}</span>
+                      <span>Жеңілдік ({discount.code} - {discount.percentage}%):</span>
+                      <span>-{((calculateSubtotal() * discount.percentage) / 100).toFixed(2)} ₸</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between items-center pt-3 border-t">
-                    <span className="text-lg font-bold text-gray-900">Итого:</span>
+                    <span className="text-lg font-bold text-gray-900">Барлығы:</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${calculateTotal().toFixed(2)}
+                      {calculateTotal().toFixed(2)} ₸
                     </span>
                   </div>
                 </div>
@@ -300,11 +302,11 @@ export default function CheckoutPage() {
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Обработка...' : 'Оплатить'}
+                  {loading ? 'Өңделуде...' : 'Төлеу'}
                 </button>
 
                 <p className="text-xs text-gray-500 text-center mt-4">
-                  Уведомление будет отправлено на {formData.notificationMethod === 'email' ? 'Email' : 'WhatsApp'}
+                  Хабарландыру жіберіледі: {formData.notificationMethod === 'email' ? 'Email' : 'WhatsApp'}
                 </p>
               </div>
             </div>

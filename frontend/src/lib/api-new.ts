@@ -137,6 +137,13 @@ class ApiClient {
     });
   }
 
+  async updateRentalPaymentStatus(id: number, paymentStatus: 'pending' | 'paid' | 'failed') {
+    return this.request<any>(`/rentals/${id}/payment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus }),
+    });
+  }
+
   async deleteRental(id: number) {
     return this.request(`/rentals/${id}`, { method: 'DELETE' });
   }
