@@ -115,9 +115,41 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-cyan-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-cyan-100 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        {/* Wavy lines */}
+        <svg className="absolute top-10 left-10 w-32 h-32 text-blue-600" viewBox="0 0 100 100">
+          <path d="M10,50 Q30,30 50,50 T90,50" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M10,60 Q30,40 50,60 T90,60" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M10,70 Q30,50 50,70 T90,70" stroke="currentColor" strokeWidth="2" fill="none" />
+        </svg>
+        
+        {/* Circles */}
+        <div className="absolute top-20 right-20 w-24 h-24 border-4 border-blue-400 rounded-full"></div>
+        <div className="absolute bottom-32 left-20 w-16 h-16 border-4 border-cyan-400 rounded-full"></div>
+        
+        {/* Dots grid */}
+        <div className="absolute top-1/3 right-1/4">
+          <div className="grid grid-cols-4 gap-3">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="w-2 h-2 bg-blue-400 rounded-full"></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Plus signs */}
+        <div className="absolute top-40 right-32 text-blue-400 text-6xl font-light">+</div>
+        <div className="absolute bottom-40 left-32 text-cyan-400 text-6xl font-light">+</div>
+        
+        {/* Large wavy shape */}
+        <svg className="absolute bottom-0 right-0 w-96 h-96 text-blue-300" viewBox="0 0 200 200">
+          <path d="M0,100 Q50,50 100,100 T200,100 L200,200 L0,200 Z" fill="currentColor" />
+        </svg>
+      </div>
+
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-blue-200 shadow-sm">
+      <header className="relative z-10 bg-white/90 backdrop-blur-md border-b border-blue-200 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center">
@@ -137,13 +169,29 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-12">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-12">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-blue-100">
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden mb-8 border border-white/50">
             {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-4 sm:px-6 md:px-8 py-8 md:py-12 text-white relative">
-              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex gap-1 sm:gap-2">
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-600 px-4 sm:px-6 md:px-8 py-8 md:py-12 text-white relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute inset-0 opacity-10">
+                <svg className="absolute top-4 right-10 w-20 h-20" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="2" fill="none" />
+                </svg>
+                <div className="absolute bottom-4 left-10 w-12 h-12 border-2 border-white rounded-full"></div>
+                <div className="absolute top-1/2 right-20">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex gap-1 sm:gap-2 z-10">
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -173,18 +221,18 @@ export default function ProfilePage() {
                 )}
               </div>
               
-              <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
+              <div className="flex items-center gap-3 sm:gap-4 md:gap-6 relative z-10">
                 <div className="relative group">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 sm:border-3 md:border-4 border-white/30 overflow-hidden">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm border-3 sm:border-4 md:border-4 border-white/50 overflow-hidden shadow-2xl">
                     {avatar ? (
                       <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-3xl sm:text-4xl md:text-5xl">👤</span>
+                      <User className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 text-white" />
                     )}
                   </div>
                   {isEditing && (
-                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition">
-                      <Camera className="w-6 h-6 text-white" />
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition">
+                      <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       <input
                         type="file"
                         accept="image/*"
@@ -194,21 +242,21 @@ export default function ProfilePage() {
                     </label>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">
+                <div className="flex-1">
+                  <h1 className="text-xl sm:text-2xl md:text-4xl font-bold mb-1 sm:mb-2 drop-shadow-lg">
                     {user.firstName} {user.lastName}
                   </h1>
-                  <p className="text-blue-100 flex items-center gap-2 text-xs sm:text-sm">
-                    <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <p className="text-white/90 flex items-center gap-2 text-xs sm:text-sm md:text-base drop-shadow">
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                     <span className="truncate">{user.email}</span>
                   </p>
-                  <div className="mt-2 inline-block">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  <div className="mt-2 sm:mt-3 inline-block">
+                    <span className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-lg ${
                       user.role === 'admin' 
                         ? 'bg-yellow-400 text-yellow-900' 
-                        : 'bg-blue-400 text-blue-900'
+                        : 'bg-white/90 text-blue-700'
                     }`}>
-                      {user.role === 'admin' ? '👑 Администратор' : '👤 Пользователь'}
+                      {user.role === 'admin' ? 'Әкімші' : 'Қолданушы'}
                     </span>
                   </div>
                 </div>
@@ -216,11 +264,14 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Info */}
-            <div className="p-4 sm:p-6 md:p-8">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Жеке ақпарат</h2>
+            <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-white to-blue-50/30">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-600" />
+                Жеке ақпарат
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Аты
                   </label>
                   {isEditing ? (
@@ -228,15 +279,15 @@ export default function ProfilePage() {
                       type="text"
                       value={editData.firstName}
                       onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                     />
                   ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user.firstName}</p>
+                    <p className="px-4 py-3 bg-blue-50 rounded-xl text-gray-900 font-medium border border-blue-100">{user.firstName}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Тегі
                   </label>
                   {isEditing ? (
@@ -244,10 +295,10 @@ export default function ProfilePage() {
                       type="text"
                       value={editData.lastName}
                       onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                     />
                   ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user.lastName}</p>
+                    <p className="px-4 py-3 bg-blue-50 rounded-xl text-gray-900 font-medium border border-blue-100">{user.lastName}</p>
                   )}
                 </div>
 
@@ -293,14 +344,15 @@ export default function ProfilePage() {
               </div>
 
               {/* Хабарландырулар баптаулары */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
+              <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-white rounded-2xl border-2 border-blue-200 shadow-lg">
+                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-blue-600" />
                   Хабарландырулар баптаулары
                 </h3>
                 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Хабарландырулар үшін Email
                     </label>
                     {isEditing ? (
@@ -308,18 +360,18 @@ export default function ProfilePage() {
                         type="email"
                         value={editData.notificationEmail || editData.email}
                         onChange={(e) => setEditData({ ...editData, notificationEmail: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                         placeholder="notification@email.com"
                       />
                     ) : (
-                      <p className="px-4 py-3 bg-white rounded-lg text-gray-900">
+                      <p className="px-4 py-3 bg-white rounded-xl text-gray-900 font-medium border border-blue-100 shadow-sm">
                         {user.notificationEmail || user.email}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Хабарландырулар үшін WhatsApp
                     </label>
                     {isEditing ? (
@@ -327,31 +379,31 @@ export default function ProfilePage() {
                         type="tel"
                         value={editData.notificationWhatsApp || editData.phone}
                         onChange={(e) => setEditData({ ...editData, notificationWhatsApp: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                         placeholder="+7 777 123 45 67"
                       />
                     ) : (
-                      <p className="px-4 py-3 bg-white rounded-lg text-gray-900">
+                      <p className="px-4 py-3 bg-white rounded-xl text-gray-900 font-medium border border-blue-100 shadow-sm">
                         {user.notificationWhatsApp || user.phone || 'Көрсетілмеген'}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Байланыс әдісі
                     </label>
                     {isEditing ? (
                       <select
                         value={editData.preferredNotification || 'email'}
                         onChange={(e) => setEditData({ ...editData, preferredNotification: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                       >
                         <option value="email">Email</option>
                         <option value="whatsapp">WhatsApp</option>
                       </select>
                     ) : (
-                      <p className="px-4 py-3 bg-white rounded-lg text-gray-900">
+                      <p className="px-4 py-3 bg-white rounded-xl text-gray-900 font-medium border border-blue-100 shadow-sm">
                         {user.preferredNotification === 'whatsapp' ? 'WhatsApp' : 'Email'}
                       </p>
                     )}

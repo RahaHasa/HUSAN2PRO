@@ -37,6 +37,12 @@ export class User {
   @Column({ default: 'email' })
   preferredNotification: string; // 'email' or 'whatsapp'
 
+  @Column({ nullable: true })
+  resetPasswordToken: string;
+
+  @Column({ nullable: true })
+  resetPasswordExpires: Date;
+
   @Column({
     type: 'enum',
     enum: UserRole,
