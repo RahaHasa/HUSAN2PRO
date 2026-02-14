@@ -5,7 +5,7 @@
 1. Откройте https://railway.app
 2. Нажмите **"Start a New Project"**
 3. Войдите через GitHub
-
+npm install && npm run build
 ## Шаг 2: Создание PostgreSQL базы данных
 
 1. В Railway нажмите **"+ New"**

@@ -114,8 +114,9 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="your@email.com"
                 />
               </div>
             </div>
@@ -136,8 +137,9 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="••••••••"
                 />
                 <button
                   type="button"

@@ -25,7 +25,19 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      // Kazakh error messages
+      const errorMessages: Record<number, string> = {
+        400: 'Қате сұрау. Деректерді тексеріңіз',
+        401: 'Авторизация қажет. Жүйеге кіріңіз',
+        403: 'Қол жетімді емес. Рұқсат жоқ',
+        404: 'Деректер табылмады',
+        409: 'Қақтығыс. Бұл деректер бұрыннан бар',
+        500: 'Сервер қатесі. Әкімшіге хабарласыңыз',
+        503: 'Сервер қол жетімді емес. Кейінірек байқап көріңіз'
+      };
+
+      const errorMessage = errorMessages[response.status] || `Қате орын алды: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('content-type');

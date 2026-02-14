@@ -114,8 +114,9 @@ export default function RegisterPage() {
                   required
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="Асет"
                 />
               </div>
 
@@ -129,8 +130,9 @@ export default function RegisterPage() {
                   required
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="Жұмабаев"
                 />
               </div>
             </div>
@@ -145,8 +147,9 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="your@email.com"
               />
             </div>
 
@@ -160,7 +163,6 @@ export default function RegisterPage() {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="+7 777 123 45 67"
               />
             </div>
 
@@ -176,8 +178,9 @@ export default function RegisterPage() {
                   minLength={6}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Кемінде 6 таңба болуы керек')}
+                  onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="Кемінде 6 таңба"
                 />
                 <button
                   type="button"

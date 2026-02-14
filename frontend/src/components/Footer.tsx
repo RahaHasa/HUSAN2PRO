@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+    <footer className="mt-auto bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-blue-700 pt-8 text-center text-sm text-blue-200">
-          <p>&copy; 2024 RENT MEYRAM. Барлық құқықтар қорғалған.</p>
+          <p>&copy; 2026 RENT MEYRAM</p>
         </div>
       </div>
     </footer>

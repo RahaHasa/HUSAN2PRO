@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api-new';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Home, LogOut, Package, Tag, Film, Gift } from 'lucide-react';
 import Toast from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -402,103 +402,176 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      {/* Abstract Background Patterns */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Wavy lines */}
+        <svg className="absolute top-0 left-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="wave" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <path d="M0 50 Q 25 30, 50 50 T 100 50" stroke="#1e40af" fill="none" strokeWidth="1"/>
+              <path d="M0 60 Q 25 40, 50 60 T 100 60" stroke="#1e40af" fill="none" strokeWidth="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#wave)"/>
+        </svg>
+        
+        {/* Circles */}
+        <div className="absolute top-20 right-10 w-64 h-64 bg-blue-400/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-blue-300/5 rounded-full blur-3xl"></div>
+        
+        {/* Dots pattern */}
+        <svg className="absolute bottom-0 right-0 w-1/2 h-1/2 opacity-[0.02]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="#1e40af"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)"/>
+        </svg>
+        
+        {/* Plus signs */}
+        <svg className="absolute top-1/4 left-1/4 w-64 h-64 opacity-[0.02]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="plus" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M15 5 L15 25 M5 15 L25 15" stroke="#1e40af" strokeWidth="2"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#plus)"/>
+        </svg>
+      </div>
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="relative bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">Әкімші панелі</h1>
-              <p className="text-xs sm:text-sm text-gray-500">Мазмұнды басқару</p>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                Әкімші панелі
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600">Мазмұнды басқару</p>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Link href="/" className="text-xs sm:text-sm font-medium text-gray-600 hover:text-black transition">
-                Басты бетке
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <Link 
+                href="/" 
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+              >
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Басты бетке</span>
               </Link>
-              <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
-                {user?.firstName} {user?.lastName}
-              </span>
+              <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
+                <span className="text-sm font-medium text-blue-900">
+                  {user?.firstName} {user?.lastName}
+                </span>
+              </div>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  router.push('/login');
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Шығу</span>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className="relative container mx-auto px-4 py-6 md:py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Тауарлар</h3>
-              <span className="text-xl sm:text-2xl">📦</span>
+          <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-700">Тауарлар</h3>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Package className="w-5 h-5 text-white" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold">{products.length}</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              {products.length}
+            </p>
           </div>
           
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Санаттар</h3>
-              <span className="text-xl sm:text-2xl">🏷️</span>
+          <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-700">Санаттар</h3>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Tag className="w-5 h-5 text-white" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold">{categories.length}</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              {categories.length}
+            </p>
           </div>
           
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Жалға алулар</h3>
-              <span className="text-xl sm:text-2xl">🎬</span>
+          <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-700">Жалға алулар</h3>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Film className="w-5 h-5 text-white" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold">{rentals.length}</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              {rentals.length}
+            </p>
           </div>
           
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Жеңілдіктер</h3>
-              <span className="text-xl sm:text-2xl">🎁</span>
+          <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl hover:border-blue-200 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-700">Жеңілдіктер</h3>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Gift className="w-5 h-5 text-white" />
+              </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold">{discounts.length}</p>
+            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              {discounts.length}
+            </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="border-b border-gray-200 overflow-x-auto">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100">
+          <div className="border-b border-blue-100 overflow-x-auto">
             <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6 min-w-max">
               <button
                 onClick={() => setActiveTab('products')}
-                className={`py-3 sm:py-4 px-2 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap ${
+                className={`py-3 sm:py-4 px-2 border-b-2 font-semibold text-xs sm:text-sm transition whitespace-nowrap ${
                   activeTab === 'products'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-blue-600'
                 }`}
               >
                 Тауарлар ({products.length})
               </button>
               <button
                 onClick={() => setActiveTab('categories')}
-                className={`py-3 sm:py-4 px-2 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap ${
+                className={`py-3 sm:py-4 px-2 border-b-2 font-semibold text-xs sm:text-sm transition whitespace-nowrap ${
                   activeTab === 'categories'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-blue-600'
                 }`}
               >
                 Санаттар ({categories.length})
               </button>
               <button
                 onClick={() => setActiveTab('rentals')}
-                className={`py-3 sm:py-4 px-2 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap ${
+                className={`py-3 sm:py-4 px-2 border-b-2 font-semibold text-xs sm:text-sm transition whitespace-nowrap ${
                   activeTab === 'rentals'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-blue-600'
                 }`}
               >
                 Жалға алулар ({rentals.length})
               </button>
               <button
                 onClick={() => setActiveTab('discounts')}
-                className={`py-3 sm:py-4 px-2 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap ${
+                className={`py-3 sm:py-4 px-2 border-b-2 font-semibold text-xs sm:text-sm transition whitespace-nowrap ${
                   activeTab === 'discounts'
-                    ? 'border-black text-black'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-blue-600'
                 }`}
               >
                 Жеңілдіктер ({discounts.length})
@@ -511,14 +584,14 @@ export default function AdminPage() {
             {activeTab === 'products' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Тауарларды басқару</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">Тауарларды басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
                       resetProductForm();
                       setShowProductModal(true);
                     }}
-                    className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow-lg hover:shadow-xl text-sm font-semibold"
                   >
                     <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">Тауар қосу</span>
@@ -526,43 +599,43 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-xl border border-blue-100">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
                       <tr>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Сурет</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Атауы</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Санат</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Баға</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden lg:table-cell">Қойма</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden sm:table-cell">Мәртебе</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Әрекеттер</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Сурет</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Атауы</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900 hidden md:table-cell">Санат</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Баға</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900 hidden lg:table-cell">Қойма</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900 hidden sm:table-cell">Мәртебе</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Әрекеттер</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white">
                       {products.map((product) => (
-                        <tr key={product.id} className="border-b hover:bg-gray-50">
+                        <tr key={product.id} className="border-b border-blue-50 hover:bg-blue-50/50 transition">
                           <td className="py-3 px-4">
                             {product.image ? (
-                              <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                              <img src={product.image} alt={product.name} className="w-12 h-12 object-cover rounded-lg shadow-sm" />
                             ) : (
-                              <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center shadow-sm">
                               </div>
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <div className="font-medium text-sm">{product.name}</div>
+                            <div className="font-semibold text-sm text-gray-800">{product.name}</div>
                             <div className="text-xs text-gray-500 md:hidden">{product.category?.name}</div>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 hidden md:table-cell">{product.category?.name || '-'}</td>
-                          <td className="py-3 px-4 font-medium text-sm">{product.price} ₸</td>
+                          <td className="py-3 px-4 font-bold text-sm text-blue-600">{product.price} ₸</td>
                           <td className="py-3 px-4 text-sm hidden lg:table-cell">
-                            <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {product.stock || 0} шт
                             </span>
                           </td>
                           <td className="py-3 px-4 hidden sm:table-cell">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                               product.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                             }`}>
                               {product.available ? 'Қолжетімді' : 'Қолжетімсіз'}
@@ -572,13 +645,13 @@ export default function AdminPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => openEditProduct(product)}
-                                className="text-blue-600 hover:text-blue-800"
+                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(product.id)}
-                                className="text-red-600 hover:text-red-800"
+                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -596,14 +669,14 @@ export default function AdminPage() {
             {activeTab === 'categories' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Санаттарды басқару</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">Санаттарды басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
                       resetCategoryForm();
                       setShowCategoryModal(true);
                     }}
-                    className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow-lg hover:shadow-xl text-sm font-semibold"
                   >
                     <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">Санат қосу</span>
@@ -613,19 +686,19 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categories.map((category) => (
-                    <div key={category.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div key={category.id} className="bg-white rounded-xl p-5 border border-blue-100 shadow-lg hover:shadow-xl hover:border-blue-200 transition-all duration-300">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-bold text-lg">{category.name}</h3>
+                        <h3 className="font-bold text-lg text-gray-800">{category.name}</h3>
                         <div className="flex gap-2">
                           <button
                             onClick={() => openEditCategory(category)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(category.id)}
-                            className="text-red-600 hover:text-red-800"
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -641,31 +714,31 @@ export default function AdminPage() {
             {/* Rentals Tab */}
             {activeTab === 'rentals' && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold mb-6">Жалға алуларды басқару</h2>
-                <div className="overflow-x-auto">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-6">Жалға алуларды басқару</h2>
+                <div className="overflow-x-auto rounded-xl border border-blue-100">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
                       <tr>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">ID</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Пайдаланушы</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden md:table-cell">Тауар</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Кезең</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600 hidden lg:table-cell">Төлем</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Мәртебе</th>
-                        <th className="text-left py-3 px-4 text-xs font-medium text-gray-600">Әрекеттер</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">ID</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Пайдаланушы</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900 hidden md:table-cell">Тауар</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Кезең</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900 hidden lg:table-cell">Төлем</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Мәртебе</th>
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-blue-900">Әрекеттер</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white">
                       {rentals.map((rental) => (
-                        <tr key={rental.id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 font-medium text-sm">#{rental.id}</td>
-                          <td className="py-3 px-4 text-sm">{rental.user?.email}</td>
-                          <td className="py-3 px-4 text-sm hidden md:table-cell">{rental.product?.name}</td>
-                          <td className="py-3 px-4 text-xs">
+                        <tr key={rental.id} className="border-b border-blue-50 hover:bg-blue-50/50 transition">
+                          <td className="py-3 px-4 font-bold text-sm text-gray-800">#{rental.id}</td>
+                          <td className="py-3 px-4 text-sm text-gray-700">{rental.user?.email}</td>
+                          <td className="py-3 px-4 text-sm text-gray-700 hidden md:table-cell">{rental.product?.name}</td>
+                          <td className="py-3 px-4 text-xs text-gray-600">
                             {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}
                           </td>
                           <td className="py-3 px-4 hidden lg:table-cell">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                               rental.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
                               rental.paymentStatus === 'failed' ? 'bg-red-100 text-red-700' :
                               'bg-yellow-100 text-yellow-700'
@@ -675,7 +748,7 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                               rental.status === 'active' ? 'bg-green-100 text-green-700' :
                               rental.status === 'completed' ? 'bg-gray-100 text-gray-700' :
                               'bg-yellow-100 text-yellow-700'
@@ -688,13 +761,13 @@ export default function AdminPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => openEditRental(rental)}
-                                className="text-blue-600 hover:text-blue-800"
+                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteRental(rental.id)}
-                                className="text-red-600 hover:text-red-800"
+                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -712,14 +785,14 @@ export default function AdminPage() {
             {activeTab === 'discounts' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold">Жеңілдіктерді басқару</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800">Жеңілдіктерді басқару</h2>
                   <button
                     onClick={() => {
                       setEditingItem(null);
                       resetDiscountForm();
                       setShowDiscountModal(true);
                     }}
-                    className="bg-black text-white px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-800 transition text-sm"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 hover:from-blue-700 hover:to-blue-800 transition shadow-lg hover:shadow-xl text-sm font-semibold"
                   >
                     <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">Жеңілдік қосу</span>
@@ -729,22 +802,24 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {discounts.map((discount) => (
-                    <div key={discount.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div key={discount.id} className="bg-white rounded-xl p-5 border border-blue-100 shadow-lg hover:shadow-xl hover:border-blue-200 transition-all duration-300">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h3 className="font-bold text-lg">{discount.name}</h3>
-                          <p className="text-2xl font-bold text-green-600">{discount.value}%</p>
+                          <h3 className="font-bold text-lg text-gray-800">{discount.name}</h3>
+                          <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+                            {discount.value}%
+                          </p>
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => openEditDiscount(discount)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteDiscount(discount.id)}
-                            className="text-red-600 hover:text-red-800"
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -753,7 +828,7 @@ export default function AdminPage() {
                       <div className="text-xs text-gray-600 space-y-1">
                         {discount.startDate && <p>С: {new Date(discount.startDate).toLocaleDateString()}</p>}
                         {discount.endDate && <p>До: {new Date(discount.endDate).toLocaleDateString()}</p>}
-                        <span className={`inline-block px-2 py-1 rounded-full ${
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                           discount.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>
                           {discount.isActive ? 'Белсенді' : 'Белсенді емес'}
@@ -771,12 +846,12 @@ export default function AdminPage() {
       {/* Product Modal */}
       {showProductModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-blue-100">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+              <h3 className="text-xl font-bold text-white">
                 {editingItem ? 'Тауарды өзгерту' : 'Тауар қосу'}
               </h3>
-              <button onClick={() => setShowProductModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowProductModal(false)} className="text-white/80 hover:text-white transition">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -789,7 +864,6 @@ export default function AdminPage() {
                   value={productForm.name}
                   onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                  placeholder="Canon EOS R5"
                 />
               </div>
 
@@ -800,7 +874,6 @@ export default function AdminPage() {
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                   rows={3}
-                  placeholder="Профессиональная камера..."
                 />
               </div>
 
@@ -828,7 +901,6 @@ export default function AdminPage() {
                       value={productForm.price}
                       onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                      placeholder="150"
                     />
                   </div>
                   <div>
@@ -839,7 +911,6 @@ export default function AdminPage() {
                       value={productForm.stock}
                       onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                      placeholder="1"
                     />
                   </div>
                 </div>
@@ -896,7 +967,6 @@ export default function AdminPage() {
                   onChange={(e) => setProductForm({ ...productForm, specifications: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                   rows={2}
-                  placeholder="45MP, 8K видео, IBIS..."
                 />
               </div>
 
@@ -915,13 +985,13 @@ export default function AdminPage() {
             <div className="border-t px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => setShowProductModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
               >
                 Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateProduct : handleCreateProduct}
-                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-800 flex items-center gap-2 shadow-lg"
               >
                 <Save className="w-4 h-4" />
                 {editingItem ? 'Жаңарту' : 'Жасау'}
@@ -934,12 +1004,12 @@ export default function AdminPage() {
       {/* Category Modal */}
       {showCategoryModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full">
-            <div className="border-b px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-blue-100">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+              <h3 className="text-xl font-bold text-white">
                 {editingItem ? 'Санатты өзгерту' : 'Санат қосу'}
               </h3>
-              <button onClick={() => setShowCategoryModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowCategoryModal(false)} className="text-white/80 hover:text-white transition">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -952,7 +1022,6 @@ export default function AdminPage() {
                   value={categoryForm.name}
                   onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                  placeholder="Камералар"
                 />
               </div>
 
@@ -963,7 +1032,6 @@ export default function AdminPage() {
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                   rows={3}
-                  placeholder="Профессиональды камералар..."
                 />
               </div>
 
@@ -1006,13 +1074,13 @@ export default function AdminPage() {
             <div className="border-t px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => setShowCategoryModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
               >
                 Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateCategory : handleCreateCategory}
-                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-800 flex items-center gap-2 shadow-lg"
               >
                 <Save className="w-4 h-4" />
                 {editingItem ? 'Жаңарту' : 'Жасау'}
@@ -1025,12 +1093,12 @@ export default function AdminPage() {
       {/* Discount Modal */}
       {showDiscountModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full">
-            <div className="border-b px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-blue-100">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+              <h3 className="text-xl font-bold text-white">
                 {editingItem ? 'Жеңілдікті өзгерту' : 'Жеңілдік қосу'}
               </h3>
-              <button onClick={() => setShowDiscountModal(false)} className="text-gray-500 hover:text-gray-700">
+              <button onClick={() => setShowDiscountModal(false)} className="text-white/80 hover:text-white transition">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -1043,7 +1111,6 @@ export default function AdminPage() {
                   value={discountForm.code}
                   onChange={(e) => setDiscountForm({ ...discountForm, code: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                  placeholder="WINTER2026"
                 />
               </div>
 
@@ -1054,7 +1121,6 @@ export default function AdminPage() {
                   value={discountForm.percentage}
                   onChange={(e) => setDiscountForm({ ...discountForm, percentage: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                  placeholder="15"
                   min="0"
                   max="100"
                 />
@@ -1097,13 +1163,13 @@ export default function AdminPage() {
             <div className="border-t px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => setShowDiscountModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
               >
                 Болдырмау
               </button>
               <button
                 onClick={editingItem ? handleUpdateDiscount : handleCreateDiscount}
-                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-800 flex items-center gap-2 shadow-lg"
               >
                 <Save className="w-4 h-4" />
                 {editingItem ? 'Жаңарту' : 'Жасау'}
@@ -1116,10 +1182,10 @@ export default function AdminPage() {
       {/* Rental Edit Modal */}
       {showRentalModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="border-b px-6 py-4 flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold">Жалға алуды өзгерту #{editingItem?.id}</h2>
-              <button onClick={() => setShowRentalModal(false)} className="hover:bg-gray-100 p-2 rounded-lg">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-blue-100">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center sticky top-0 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-white">Жалға алуды өзгерту #{editingItem?.id}</h2>
+              <button onClick={() => setShowRentalModal(false)} className="text-white/80 hover:text-white transition p-2 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1168,13 +1234,13 @@ export default function AdminPage() {
             <div className="border-t px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => setShowRentalModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
               >
                 Болдырмау
               </button>
               <button
                 onClick={handleUpdateRental}
-                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-blue-800 flex items-center gap-2 shadow-lg"
               >
                 <Save className="w-4 h-4" />
                 Сақтау
@@ -1204,6 +1270,7 @@ export default function AdminPage() {
           onClose={() => setToast(null)}
         />
       )}
+
     </div>
   );
 }

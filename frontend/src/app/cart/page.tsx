@@ -323,40 +323,6 @@ export default function CartPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white mt-16 md:mt-24">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">RENT MEYRAM</h3>
-              <p className="text-blue-200 text-sm">Кәсіби кино жабдықтарын жалға беру</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Компания</h4>
-              <ul className="space-y-2 text-sm text-blue-200">
-                <li><Link href="/about" className="hover:text-white transition">Біз туралы</Link></li>
-                <li><Link href="/contacts" className="hover:text-white transition">Байланыс</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Каталог</h4>
-              <ul className="space-y-2 text-sm text-blue-200">
-                <li><Link href="/catalog" className="hover:text-white transition">Барлық тауарлар</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Қолдау</h4>
-              <ul className="space-y-2 text-sm text-blue-200">
-                <li><Link href="/help" className="hover:text-white transition">Көмек</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-blue-700 mt-8 pt-8 text-center text-sm text-blue-200">
-            © 2026 RENT MEYRAM. Барлық құқықтар қорғалған.
-          </div>
-        </div>
-      </footer>
-
       {/* Toast Notification */}
       {toast && (
         <Toast
