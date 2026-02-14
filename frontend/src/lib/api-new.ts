@@ -10,9 +10,9 @@ class ApiClient {
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getToken();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (token) {
@@ -31,10 +31,10 @@ class ApiClient {
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       const text = await response.text();
-      return text ? JSON.parse(text) : null;
+      return text ? JSON.parse(text) : ({} as T);
     }
     
-    return null;
+    return {} as T;
   }
 
   // Auth
