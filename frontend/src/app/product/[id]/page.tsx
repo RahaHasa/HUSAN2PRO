@@ -142,13 +142,10 @@ export default function ProductPage() {
 
             <div className="flex items-center space-x-3 sm:space-x-6">
               {user?.role !== 'admin' && (
-                <Link href="/cart" className="hover:text-gray-600 transition hidden sm:block">
+                <Link href="/cart" className="hover:text-gray-600 transition">
                   <ShoppingCart className="w-5 h-5" />
                 </Link>
               )}
-              <button className="hover:text-gray-600 transition hidden sm:block">
-                <Heart className="w-5 h-5" />
-              </button>
               {user ? (
                 <Link href="/profile" className="text-sm font-medium hover:text-gray-600 transition flex items-center gap-2">
                   <User className="w-5 h-5" />
@@ -196,7 +193,7 @@ export default function ProductPage() {
                     product.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 
                     'bg-red-100 text-red-700'
                   }`}>
-                    📦 Қоймада: {product.stock} дана
+                    Қоймада: {product.stock} дана
                   </span>
                 )}
               </div>
@@ -270,20 +267,11 @@ export default function ProductPage() {
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={handleRentNow}
-                    disabled={!startDate || !endDate}
-                    className="flex-1 bg-black text-white px-6 py-4 rounded-lg font-medium hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle className="w-5 h-5" />
-                    Қазір жалға алу
-                  </button>
-                  
-                  <button
                     onClick={handleAddToCart}
-                    className="flex-1 bg-white text-black px-6 py-4 rounded-lg font-medium border-2 border-black hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                    className="w-full bg-black text-white px-6 py-4 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center gap-2"
                   >
                     <ShoppingCart className="w-5 h-5" />
-                    Себетке
+                    Себетке қосу
                   </button>
                 </div>
               </div>
@@ -291,26 +279,7 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Additional Info */}
-        <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="text-3xl mb-3">🚚</div>
-            <h3 className="font-bold mb-2">Жылдам жеткізу</h3>
-            <p className="text-sm text-gray-600">Жабдықты 24 сағат ішінде жеткізу</p>
-          </div>
-          
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="text-3xl mb-3">🛡️</div>
-            <h3 className="font-bold mb-2">Сапа кепілдігі</h3>
-            <p className="text-sm text-gray-600">Барлық жабдықтар тексерілген және жарамды</p>
-          </div>
-          
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="text-3xl mb-3">💬</div>
-            <h3 className="font-bold mb-2">Қолдау 24/7</h3>
-            <p className="text-sm text-gray-600">Кез келген уақытта кеңес және көмек</p>
-          </div>
-        </div>
+        
       </main>
 
       {/* Toast Notification */}

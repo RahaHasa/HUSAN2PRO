@@ -313,7 +313,7 @@ export default function RentalsPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl">📦</div>
+                      <div className="w-full h-full flex items-center justify-center text-6xl"></div>
                     )}
                   </div>
 

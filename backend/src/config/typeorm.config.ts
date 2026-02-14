@@ -8,6 +8,6 @@ export const getTypeOrmConfig = (): TypeOrmModuleOptions => ({
   password: process.env.DATABASE_PASSWORD || 'jabir',
   database: process.env.DATABASE_NAME || 'cinema_equipment_db',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: true, // Set to false in production
+  synchronize: true, 
   logging: false,
 });

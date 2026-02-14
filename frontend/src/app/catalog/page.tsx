@@ -223,7 +223,7 @@ export default function CatalogPage() {
                         className="w-full h-full object-cover group-hover:scale-105 transition"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
+                      <div className="w-full h-full flex items-center justify-center text-5xl"></div>
                     )}
                     {!product.available && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
