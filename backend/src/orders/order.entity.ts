@@ -15,19 +15,22 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ unique: true })
+  orderNumber: string;
+
   @ManyToOne(() => User, user => user.orders)
   user: User;
 
   @OneToMany(() => OrderItem, item => item.order, { cascade: true })
   items: OrderItem[];
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   subtotal: number;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   discountAmount: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   total: number;
 
   @Column({
@@ -37,10 +40,10 @@ export class Order {
   })
   status: OrderStatus;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   deliveryAddress: string;
 
-  @Column()
+  @Column({ nullable: true })
   phone: string;
 
   @Column({ type: 'text', nullable: true })

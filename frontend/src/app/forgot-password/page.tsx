@@ -139,13 +139,13 @@ export default function ForgotPasswordPage() {
                 }`}
               >
                 <Phone className="w-5 h-5" />
-                Телефон
+                WhatsApp
               </button>
             </div>
 
             <div>
               <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-2">
-                {contactMethod === 'email' ? 'Email мекенжайы' : 'Телефон нөмірі'}
+                {contactMethod === 'email' ? 'Email мекенжайы' : 'WhatsApp нөмірі'}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -162,7 +162,7 @@ export default function ForgotPasswordPage() {
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder={contactMethod === 'email' ? 'your@email.com' : '+7 777 123 45 67'}
+                  placeholder={contactMethod === 'email' ? 'example@email.com' : '+77082475131'}
                 />
               </div>
             </div>

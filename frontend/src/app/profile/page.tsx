@@ -7,9 +7,10 @@ import Link from 'next/link';
 import { User, Mail, Phone, Calendar, ShoppingBag, LogOut, Edit2, Save, X, Camera, Upload } from 'lucide-react';
 import { api } from '@/lib/api-new';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import Toast from '@/components/Toast';
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading, logout, refreshUser } = useAuth();
   const router = useRouter();
   const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,11 +31,15 @@ export default function ProfilePage() {
     onConfirm: () => {},
   });
 
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   const [editData, setEditData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
+    instagram: '',
     notificationEmail: '',
     notificationWhatsApp: '',
     preferredNotification: 'email',
@@ -53,6 +58,7 @@ export default function ProfilePage() {
         lastName: user.lastName,
         email: user.email,
         phone: user.phone || '',
+        instagram: user.instagram || '',
         notificationEmail: user.notificationEmail || user.email,
         notificationWhatsApp: user.notificationWhatsApp || user.phone || '',
         preferredNotification: user.preferredNotification || 'email',
@@ -98,8 +104,47 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
-    // TODO: Implement user update API
-    setIsEditing(false);
+    try {
+      // Телефон номерлерін форматтау
+      const formattedData = {
+        ...editData,
+        phone: formatPhoneNumber(editData.phone),
+        notificationWhatsApp: formatPhoneNumber(editData.notificationWhatsApp),
+      };
+
+      const response = await api.updateProfile(formattedData);
+      
+      // Context жаңарту үшін
+      await refreshUser();
+      
+      // Toast хабарлама көрсету
+      setToast({ message: 'Деректеріңіз жаңартылды', type: 'success' });
+      
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      setToast({ message: error.message || 'Профильді жаңарту кезінде қате', type: 'error' });
+    }
+  };
+
+  const formatPhoneNumber = (phone: string): string => {
+    if (!phone) return '';
+    
+    // Барлық бос орындар, жақшалар, сызықшаларды жою
+    let cleaned = phone.replace(/[\s\(\)\-]/g, '');
+    
+    // Егер + жоқ болса және 7 немесе 8-мен басталса
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('8')) {
+        cleaned = '+7' + cleaned.slice(1);
+      } else if (cleaned.startsWith('7')) {
+        cleaned = '+' + cleaned;
+      } else {
+        cleaned = '+7' + cleaned;
+      }
+    }
+    
+    return cleaned;
   };
 
   if (authLoading || loading) {
@@ -303,8 +348,8 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email мекенжайы
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email (кіру үшін)
                   </label>
                   {isEditing ? (
                     <div>
@@ -312,32 +357,51 @@ export default function ProfilePage() {
                         type="email"
                         value={editData.email}
                         onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
                       />
                       <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                        ⚠️ Будьте внимательны при изменении email
+                        ⚠️ Email өзгерткенде абай болыңыз
                       </p>
                     </div>
                   ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user.email}</p>
+                    <p className="px-4 py-3 bg-blue-50 rounded-xl text-gray-900 font-medium border border-blue-100">{user.email}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Телефон
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Телефон/WhatsApp
                   </label>
                   {isEditing ? (
                     <input
                       type="tel"
                       value={editData.phone}
                       onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      placeholder="+7 777 123 45 67"
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
+                      placeholder="+77082475131"
                     />
                   ) : (
-                    <p className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
-                      {user.phone || 'Не указан'}
+                    <p className="px-4 py-3 bg-blue-50 rounded-xl text-gray-900 font-medium border border-blue-100">
+                      {user.phone || 'Көрсетілмеген'}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Instagram
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.instagram}
+                      onChange={(e) => setEditData({ ...editData, instagram: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white shadow-sm"
+                      placeholder="@username"
+                    />
+                  ) : (
+                    <p className="px-4 py-3 bg-blue-50 rounded-xl text-gray-900 font-medium border border-blue-100">
+                      {user.instagram || 'Көрсетілмеген'}
                     </p>
                   )}
                 </div>
@@ -411,17 +475,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {isEditing && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800 flex items-start gap-2">
-                    <span className="text-lg">💡</span>
-                    <span>
-                      <strong>Совет:</strong> Убедитесь, что все данные заполнены корректно. 
-                      После изменения email, вам может потребоваться подтверждение.
-                    </span>
-                  </p>
-                </div>
-              )}
+              
 
               <div className="mt-8 pt-6 border-t border-gray-200">
                 <button
@@ -448,6 +502,14 @@ export default function ProfilePage() {
         cancelText="Не отменять"
         type={confirmDialog.type}
       />
+      
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }

@@ -111,4 +111,82 @@ RENT MEYRAM командасы
     console.log(`📱 SMS на ${phone}: Ваш код: ${code}`);
     return { success: false, demo: true };
   }
+
+  async sendOrderNotification(email: string, orderDetails: { orderNumber: string; total: number; items: any[] }) {
+    const itemsList = orderDetails.items.map((item, index) => 
+      `<tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${index + 1}. ${item.name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">x${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${item.totalPrice} ₸</td>
+      </tr>`
+    ).join('');
+
+    const mailOptions = {
+      from: `"RENT MEYRAM" <${process.env.EMAIL_USER || 'noreply@rentmeyram.kz'}>`,
+      to: email,
+      subject: `Тапсырыс расталды #${orderDetails.orderNumber} - RENT MEYRAM`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .order-box { background: white; border: 2px solid #2563eb; border-radius: 10px; padding: 20px; margin: 20px 0; }
+            .total { font-size: 24px; font-weight: bold; color: #2563eb; text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #2563eb; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            table { width: 100%; border-collapse: collapse; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 RENT MEYRAM</h1>
+              <p>Тапсырысыңыз расталды!</p>
+            </div>
+            <div class="content">
+              <h2>Тапсырыс нөмірі: #${orderDetails.orderNumber}</h2>
+              <p>Құрметті клиент!</p>
+              <p>Сіздің тапсырысыңыз сәтті рәсімделді және өңделуде.</p>
+              
+              <div class="order-box">
+                <h3>📦 Тапсырыс мазмұны:</h3>
+                <table>
+                  ${itemsList}
+                </table>
+                <div class="total">
+                  Жалпы сома: ${orderDetails.total} ₸
+                </div>
+              </div>
+              
+              <p>Біз сізге жақын арада хабарласамыз.</p>
+              <p>Рахмет!</p>
+            </div>
+            <div class="footer">
+              <p>© 2026 RENT MEYRAM. Барлық құқықтар қорғалған.</p>
+              <p>Сұрақтарыңыз болса, бізге хабарласыңыз.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    try {
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+        console.log('⚠️  Email настройки жоқ');
+        return { success: false, demo: true };
+      }
+
+      await this.transporter.sendMail(mailOptions);
+      console.log('✅ Тапсырыс email жіберілді:', email);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Email жіберу қатесі:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }

@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ShoppingCart, Mail, Phone, CreditCard, Check } from 'lucide-react';
+import { api } from '@/lib/api-new';
 
 export default function CheckoutPage() {
   const { user, loading: authLoading } = useAuth();
@@ -51,8 +52,18 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  const calculateDays = (startDate?: string, endDate?: string) => {
+    if (!startDate || !endDate) return 1;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  };
+
   const calculateSubtotal = () => {
-    return cart.reduce((sum, item) => sum + (item.totalPrice * item.quantity), 0);
+    return cart.reduce((sum, item) => {
+      const days = calculateDays(item.startDate, item.endDate);
+      return sum + (item.price * item.quantity * days);
+    }, 0);
   };
 
   const calculateTotal = () => {
@@ -67,34 +78,39 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     setLoading(true);
     
-    // Симуляция оплаты
-    setTimeout(async () => {
-      try {
-        // Здесь будет реальный API запрос для создания заказа
-        console.log('Order placed:', {
-          items: cart,
-          total: calculateTotal(),
-          notification: formData.notificationMethod,
-          contact: formData.notificationMethod === 'email' ? formData.email : formData.whatsapp
-        });
-        
-        // Очистка корзины и скидки
-        localStorage.removeItem('cart');
-        localStorage.removeItem('cartDiscount');
-        setCart([]);
-        setOrderPlaced(true);
-        
-        // Перенаправление через 3 секунды
-        setTimeout(() => {
-          router.push('/profile');
-        }, 3000);
-      } catch (error) {
-        console.error('Order failed:', error);
-        alert('Ошибка при оформлении заказа');
-      } finally {
-        setLoading(false);
-      }
-    }, 2000);
+    try {
+      // Создаем заказ с уведомлением
+      const orderData = {
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          totalPrice: item.price * item.quantity * calculateDays(item.startDate, item.endDate),
+        })),
+        total: calculateTotal(),
+        notificationMethod: formData.notificationMethod,
+        contact: formData.notificationMethod === 'email' ? formData.email : formData.whatsapp,
+        user: user,
+      };
+
+      await api.createOrderWithNotification(orderData);
+      
+      // Очистка корзины и скидки
+      localStorage.removeItem('cart');
+      localStorage.removeItem('cartDiscount');
+      setCart([]);
+      setOrderPlaced(true);
+      
+      // Перенаправление через 3 секунды
+      setTimeout(() => {
+        router.push('/profile');
+      }, 3000);
+    } catch (error) {
+      console.error('Order failed:', error);
+      alert('Тапсырысты рәсімдеу кезінде қате');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (authLoading || !user) {
@@ -264,16 +280,20 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Сіздің тапсырысыңыз</h2>
                 
                 <div className="space-y-3 mb-6">
-                  {cart.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {item.name} x{item.quantity}
-                      </span>
-                      <span className="font-medium text-gray-900">
-                        {(item.totalPrice * item.quantity).toFixed(2)} ₸
-                      </span>
-                    </div>
-                  ))}
+                  {cart.map((item, index) => {
+                    const days = calculateDays(item.startDate, item.endDate);
+                    const itemTotal = item.price * item.quantity * days;
+                    return (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span className="text-gray-600">
+                          {item.name} x{item.quantity}
+                        </span>
+                        <span className="font-medium text-gray-900">
+                          {itemTotal.toFixed(2)} ₸
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">

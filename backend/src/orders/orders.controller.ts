@@ -21,6 +21,11 @@ export class OrdersController {
     return this.ordersService.create(order);
   }
 
+  @Post('with-notification')
+  createWithNotification(@Body() orderData: any) {
+    return this.ordersService.createWithNotification(orderData);
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() order: Partial<Order>) {
     return this.ordersService.update(+id, order);

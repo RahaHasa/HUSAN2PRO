@@ -48,6 +48,11 @@ export default function ProductPage() {
   };
 
   const handleAddToCart = () => {
+    if (!startDate || !endDate) {
+      setToast({ message: 'Жалға алу күндерін таңдаңыз', type: 'error' });
+      return;
+    }
+
     const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingIndex = cartItems.findIndex((item: any) => item.id === product.id);
     

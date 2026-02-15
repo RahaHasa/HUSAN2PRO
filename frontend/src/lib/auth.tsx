@@ -9,6 +9,7 @@ interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  instagram?: string;
   role: string;
   notificationEmail?: string;
   notificationWhatsApp?: string;
@@ -21,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: { email: string; password: string; firstName: string; lastName: string; phone?: string }) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,8 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     api.logout().catch(() => {});
   };
 
+  const refreshUser = async () => {
+    const updatedUser = await api.getMe();
+    setUser(updatedUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

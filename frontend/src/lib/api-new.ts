@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'http://localhost:3000/api';
 
 class ApiClient {
   private getToken(): string | null {
@@ -70,6 +70,13 @@ class ApiClient {
 
   async getMe() {
     return this.request<any>('/auth/me');
+  }
+
+  async updateProfile(data: any) {
+    return this.request<{ message: string; user: any }>('/auth/update-profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   // Products
@@ -171,6 +178,19 @@ class ApiClient {
 
   async createOrder(data: any) {
     return this.request<any>('/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createOrderWithNotification(data: { 
+    items: any[]; 
+    total: number; 
+    notificationMethod: string; 
+    contact: string;
+    user: any;
+  }) {
+    return this.request<any>('/orders/with-notification', {
       method: 'POST',
       body: JSON.stringify(data),
     });

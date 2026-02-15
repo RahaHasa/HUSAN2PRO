@@ -50,6 +50,27 @@ Frontend запустится на http://localhost:3001
 - Password: jabir
 - Database: cinema_equipment_db
 
+## 📧 Email & WhatsApp конфигурациясы
+
+### Email (Gmail)
+Құпия сөзді қалпына келтіру үшін email қызметі бар:
+- **Email:** rohahoha77@gmail.com
+- **App Password:** ojcdcpfiecqaydvb
+
+### WhatsApp (Twilio)
+WhatsApp арқылы растау кодын жіберу үшін Twilio қажет:
+
+1. **Twilio тіркелу:** https://www.twilio.com/try-twilio
+2. **WhatsApp Sandbox баптау:** https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
+3. **backend/.env файлына қосыңыз:**
+   ```
+   TWILIO_ACCOUNT_SID=ваш_account_sid
+   TWILIO_AUTH_TOKEN=ваш_auth_token
+   TWILIO_WHATSAPP_NUMBER=+77082475131
+   ```
+
+**Тест режимі:** Twilio конфигурациясыз да жұмыс істейді (код консольға шығады)
+
 ##  Учетные данные администратора
 
 **Email:** admin@cinema.com  

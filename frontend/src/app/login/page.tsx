@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(emailOrPhone, password);
       router.push('/');
     } catch (err: any) {
       setError(err.message || 'Failed to login');
@@ -99,8 +99,8 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email мекенжайы
+              <label htmlFor="emailOrPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                Email немесе телефон
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -109,12 +109,12 @@ export default function LoginPage() {
                   </svg>
                 </div>
                 <input
-                  id="email"
-                  type="email"
+                  id="emailOrPhone"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Бұл өрісті толтырыңыз')}
+                  value={emailOrPhone}
+                  onChange={(e) => setEmailOrPhone(e.target.value)}
+                  onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Email немесе телефон енгізіңіз')}
                   onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />

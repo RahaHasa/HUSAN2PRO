@@ -29,6 +29,9 @@ export class User {
   phone: string;
 
   @Column({ nullable: true })
+  instagram: string;
+
+  @Column({ nullable: true })
   notificationEmail: string;
 
   @Column({ nullable: true })

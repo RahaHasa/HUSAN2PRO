@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/user.entity';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 import { EmailService } from './email.service';
+import { WhatsAppService } from './whatsapp.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private whatsAppService: WhatsAppService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -45,17 +47,31 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.usersRepository.findOne({
-      where: { email: loginDto.email },
-    });
+    // Email немесе телефон екенін анықтау
+    const isEmail = loginDto.email.includes('@');
+    
+    let user: User | null = null;
+    
+    if (isEmail) {
+      // Email арқылы іздеу
+      user = await this.usersRepository.findOne({
+        where: { email: loginDto.email },
+      });
+    } else {
+      // Телефон арқылы іздеу - форматтау
+      const phone = this.formatPhoneNumber(loginDto.email); // email өрісінде телефон келеді
+      user = await this.usersRepository.findOne({
+        where: { phone: phone },
+      });
+    }
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Email немесе телефон қате');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Құпия сөз қате');
     }
 
     const payload = { email: user.email, sub: user.id, role: user.role };
@@ -72,6 +88,24 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  private formatPhoneNumber(phone: string): string {
+    // Барлық бос орындар, жақшалар, сызықшаларды жою
+    let cleaned = phone.replace(/[\s\(\)\-]/g, '');
+    
+    // Егер + жоқ болса және 7 немесе 8-мен басталса
+    if (!cleaned.startsWith('+')) {
+      if (cleaned.startsWith('8')) {
+        cleaned = '+7' + cleaned.slice(1);
+      } else if (cleaned.startsWith('7')) {
+        cleaned = '+' + cleaned;
+      } else {
+        cleaned = '+7' + cleaned;
+      }
+    }
+    
+    return cleaned;
   }
 
   async validateUser(userId: number) {
@@ -115,8 +149,13 @@ export class AuthService {
         };
       }
     } else {
-      // SMS sending
-      await this.emailService.sendSMS(user.phone, resetCode);
+      // WhatsApp sending
+      try {
+        await this.whatsAppService.sendVerificationCode(user.phone, resetCode);
+      } catch (error) {
+        console.error('WhatsApp қатесі:', error);
+        throw new BadRequestException('WhatsApp арқылы код жіберу мүмкін болмады');
+      }
     }
 
     return {

@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { User } from '../users/user.entity';
 import { JwtStrategy } from './jwt.strategy';
 import { EmailService } from './email.service';
+import { WhatsAppService } from './whatsapp.service';
+import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [
@@ -17,8 +19,8 @@ import { EmailService } from './email.service';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, EmailService],
+  providers: [AuthService, JwtStrategy, EmailService, WhatsAppService, UsersService],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, EmailService, WhatsAppService],
 })
 export class AuthModule {}
