@@ -21,4 +21,13 @@ export class OrderItem {
 
   @Column('decimal', { precision: 10, scale: 2 })
   total: number;
+
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  totalPrice: number;
+
+  @Column({ type: 'date', nullable: true })
+  startDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  endDate: Date;
 }

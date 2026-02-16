@@ -32,8 +32,8 @@ export default function CartPage() {
     const savedDiscount = localStorage.getItem('cartDiscount');
     if (savedDiscount) {
       const discountData = JSON.parse(savedDiscount);
-      setDiscount(discountData.percentage);
-      setPromoCode(discountData.code);
+      setDiscount(discountData.percentage || 0);
+      setPromoCode(discountData.code || '');
     }
   }, []);
 
@@ -111,7 +111,9 @@ export default function CartPage() {
   const calculateSubtotal = () => {
     return cartItems.reduce((sum, item) => {
       const days = calculateDays(item.startDate, item.endDate);
-      return sum + (item.price * item.quantity * days);
+      const price = Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 1;
+      return sum + (price * quantity * days);
     }, 0);
   };
 
@@ -207,7 +209,7 @@ export default function CartPage() {
                   <div className="flex-1">
                     <h3 className="font-bold text-lg mb-2">{item.name}</h3>
                     <p className="text-gray-600 mb-3">
-                      {item.price} ₸ / день × {calculateDays(item.startDate, item.endDate)} дней
+                      {Number(item.price) || 0} ₸ / день × {calculateDays(item.startDate, item.endDate)} дней
                     </p>
                     
                     {item.startDate && item.endDate && (
@@ -244,7 +246,7 @@ export default function CartPage() {
 
                   <div className="text-right sm:text-left sm:ml-auto">
                     <p className="text-xl sm:text-2xl font-bold">
-                      {(item.price * item.quantity * calculateDays(item.startDate, item.endDate)).toFixed(2)} ₸
+                      {((Number(item.price) || 0) * item.quantity * calculateDays(item.startDate, item.endDate)).toFixed(2)} ₸
                     </p>
                   </div>
                 </div>

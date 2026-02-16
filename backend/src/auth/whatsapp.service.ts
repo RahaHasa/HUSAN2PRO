@@ -8,47 +8,51 @@ export class WhatsAppService implements OnModuleInit {
   private isReady: boolean = false;
 
   async onModuleInit() {
-    // WhatsApp Web клиентін инициализациялау
-    this.client = new Client({
-      authStrategy: new LocalAuth({
-        clientId: 'rent-meyram-bot',
-      }),
-      puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      },
-    });
-
-    // QR код генерациясы
-    this.client.on('qr', (qr) => {
-      console.log('\n🔵 WhatsApp QR кодын сканерлеңіз:\n');
-      qrcode.generate(qr, { small: true });
-      console.log('\n📱 Телефонда WhatsApp → Параметрлер → Байланысқан құрылғылар → Құрылғыны байланыстыру\n');
-    });
-
-    // Қосылды
-    this.client.on('ready', () => {
-      console.log('✅ WhatsApp қосылды! +77082475131 нөмірінен хабарламалар жіберуге дайын.');
-      this.isReady = true;
-    });
-
-    // Ажыратылды
-    this.client.on('disconnected', (reason) => {
-      console.log('❌ WhatsApp ажыратылды:', reason);
-      this.isReady = false;
-    });
-
-    // Аутентификация қатесі
-    this.client.on('auth_failure', (msg) => {
-      console.error('🔴 WhatsApp аутентификация қатесі:', msg);
-      this.isReady = false;
-    });
-
-    // Клиентті іске қосу
+    // WhatsApp Web клиент - сессия сохраняется, QR только 1 раз
     try {
+      this.client = new Client({
+        authStrategy: new LocalAuth({
+          dataPath: './whatsapp-session',
+        }),
+        puppeteer: {
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        },
+      });
+
+      // QR код - только при первом запуске
+      this.client.on('qr', (qr) => {
+        console.log('\n🔵 ПЕРВЫЙ ЗАПУСК: Отсканируйте QR-код в WhatsApp:\n');
+        qrcode.generate(qr, { small: true });
+        console.log('\n📱 Телефон → WhatsApp → Настройки → Связанные устройства → Привязать устройство\n');
+        console.log('⚡ ВАЖНО: После сканирования сессия сохранится — QR больше не понадобится!\n');
+      });
+      // Подключено
+      this.client.on('ready', () => {
+        console.log('✅ WhatsApp подключен! Отправка с номера +77082475131 активна.');
+        console.log('💾 Сессия сохранена — перезапуск без QR-кода!');
+        this.isReady = true;
+      });
+
+      // Отключено
+      this.client.on('disconnected', (reason) => {
+        console.log('❌ WhatsApp отключен:', reason);
+        this.isReady = false;
+      });
+
+      // Ошибка авторизации
+      this.client.on('auth_failure', (msg) => {
+        console.error('🔴 Ошибка авторизации WhatsApp:', msg);
+        console.log('💡 Удалите папку whatsapp-session и отсканируйте QR заново');
+        this.isReady = false;
+      });
+
+      console.log('🔄 WhatsApp инициализация запущена...');
       await this.client.initialize();
     } catch (error) {
-      console.error('WhatsApp инициализация қатесі:', error);
+      console.error('⚠️ Ошибка инициализации WhatsApp:', error.message);
+      console.log('📧 WhatsApp недоступен. Будут отправляться только Email уведомления.');
+      this.isReady = false;
     }
   }
 
@@ -67,23 +71,23 @@ export class WhatsAppService implements OnModuleInit {
 
     const chatId = formattedPhone + '@c.us';
 
-    const message = ` *RENT MEYRAM*\n\nСіздің растау кодыңыз: *${code}*\n\nБұл кодты ешкіммен бөліспеңіз!\n\n Код 15 минут жарамды.`;
+    const message = `🎬 *RENT MEYRAM*\n\nВаш код подтверждения: *${code}*\n\nНе делитесь этим кодом ни с кем!\n\n⏱ Код действителен 15 минут`;
 
-    // Егер WhatsApp қосылмаса
+    // Если WhatsApp не подключен
     if (!this.isReady) {
-      console.log('⚠️ WhatsApp әлі қосылмады. Код консольда:');
-      console.log(`📱 ${phoneNumber} үшін код: ${code}`);
-      throw new Error('WhatsApp қосылуын күтіңіз. QR кодты сканерлеңіз.');
+      console.log('⚠️ WhatsApp еще не подключен. Код в консоли:');
+      console.log(`📱 Код для ${phoneNumber}: ${code}`);
+      throw new Error('Подождите подключения WhatsApp или отсканируйте QR-код');
     }
 
     try {
-      // Хабарлама жіберу
+      // Отправка сообщения
       await this.client.sendMessage(chatId, message);
-      console.log(`✅ WhatsApp код жіберілді: ${phoneNumber}`);
+      console.log(`✅ WhatsApp код отправлен: ${phoneNumber}`);
     } catch (error) {
-      console.error('WhatsApp жіберу қатесі:', error);
-      console.log(`📱 ${phoneNumber} үшін код: ${code}`);
-      throw new Error('WhatsApp хабарламасын жіберу мүмкін болмады');
+      console.error('Ошибка отправки WhatsApp:', error);
+      console.log(`📱 Код для ${phoneNumber}: ${code}`);
+      throw new Error('Не удалось отправить WhatsApp сообщение');
     }
   }
 
@@ -102,19 +106,19 @@ export class WhatsAppService implements OnModuleInit {
       `${index + 1}. ${item.name} x${item.quantity} - ${item.totalPrice} ₸`
     ).join('\n');
 
-    const message = `🎉 *RENT MEYRAM - Тапсырыс растау*\n\nТапсырыс нөмірі: *${orderDetails.orderNumber}*\n\n📦 *Тауарлар:*\n${itemsList}\n\n💰 *Жалпы сома:* ${orderDetails.total} ₸\n\nРахмет! Біз сізге жақын арада хабарласамыз.`;
+    const message = `🎉 *RENT MEYRAM - Подтверждение заказа*\n\nНомер заказа: *${orderDetails.orderNumber}*\n\n📦 *Товары:*\n${itemsList}\n\n💰 *Общая сумма:* ${orderDetails.total} ₸\n\nСпасибо! Мы свяжемся с вами в ближайшее время.`;
 
     if (!this.isReady) {
-      console.log('⚠️ WhatsApp әлі қосылмады');
-      throw new Error('WhatsApp қосылуын күтіңіз');
+      console.log('⚠️ WhatsApp еще не подключен');
+      throw new Error('Подождите подключения WhatsApp');
     }
 
     try {
       await this.client.sendMessage(chatId, message);
-      console.log(`✅ Тапсырыс хабарламасы жіберілді: ${phoneNumber}`);
+      console.log(`✅ Уведомление о заказе отправлено: ${phoneNumber}`);
     } catch (error) {
-      console.error('WhatsApp жіберу қатесі:', error);
-      throw new Error('WhatsApp хабарламасын жіберу мүмкін болмады');
+      console.error('Ошибка отправки WhatsApp:', error);
+      throw new Error('Не удалось отправить WhatsApp сообщение');
     }
   }
 }

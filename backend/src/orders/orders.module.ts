@@ -5,13 +5,14 @@ import { OrdersController } from './orders.controller';
 import { Order } from './order.entity';
 import { OrderItem } from './order-item.entity';
 import { AuthModule } from '../auth/auth.module';
+import { ContractService } from './contract.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem]),
     AuthModule,
   ],
-  providers: [OrdersService],
+  providers: [OrdersService, ContractService],
   controllers: [OrdersController],
   exports: [OrdersService],
 })

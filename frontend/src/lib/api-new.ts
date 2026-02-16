@@ -207,6 +207,33 @@ class ApiClient {
     return this.request(`/orders/${id}`, { method: 'DELETE' });
   }
 
+  async downloadContract(orderId: number) {
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}/orders/${orderId}/contract`, {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error('Не удалось загрузить договор');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `contract-${orderId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
   // Discounts
   async getDiscounts() {
     return this.request<any[]>('/discounts');
